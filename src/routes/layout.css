@@ -1,0 +1,28 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+
+@theme {
+	/* Dark Colors */
+	--color-ground: #2b1e1a;
+	--color-espresso: #3e2b25;
+	--color-hazelnut: #533c33;
+	--color-mocha: #6f4e37;
+
+	/*Light Colors*/
+	--color-milk: #F7F2EB;
+	
+	--color-cream: #F2EAE1;
+	--color-oat: #DFD1C2;
+	--color-almond: #D2BFAB;
+
+	/* Neutral Colors */
+	--color-slate: #938b86;
+
+	/* Accents */
+	--color-berry: #8b263e;
+	--color-spice: #9e472a;
+	--color-caramel: #c87d43;
+	--color-matcha: #5b7053;
+	--color-navy: #1e2a38;
+	--color-lavender: #9a8c9e;
+}
