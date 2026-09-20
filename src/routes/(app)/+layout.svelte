@@ -3,7 +3,7 @@
 
 	// Logo Icons
 	import CoffeeIcon from '@iconify-svelte/mdi/coffee';
-	
+
 	// Tab Icons
 	import HomeIcon from '@iconify-svelte/mdi/home';
 	import FileReportIcon from '@iconify-svelte/mdi/file-report';
@@ -16,8 +16,11 @@
 
 	let { children } = $props();
 
-	let navCollapsed = false;
-	
+	let navCollapsed = $state(false);
+
+	function toggleNav() {
+		navCollapsed = !navCollapsed;
+	}
 </script>
 
 <!-- <svelte:head><link rel="icon" href={favicon} /></svelte:head> -->
@@ -27,33 +30,69 @@
 >
 	<!-- Navigation Bar -->
 	<nav
-		class="my-4 flex
-		max-w-1/6 min-w-1/8 flex-col gap-4 rounded-r-lg
+		class={[
+			`my-4 flex
+		max-w-1/6 flex-col gap-4 rounded-r-lg
 		bg-espresso
-		p-4 text-milk"
+		p-4 text-milk`,
+			(navCollapsed && 'items-center w-fit') || 'min-w-1/8'
+		]}
+
+		onmouseenter={toggleNav}
+		onmouseleave={toggleNav}
 	>
 		<!-- Title -->
-		<h1 class="flex items-center gap-2 align-top text-4xl font-bold"><CoffeeIcon class="h-10" /> KafeIn</h1>
+		<h1 class="flex items-center gap-2 align-top text-4xl font-bold">
+			<CoffeeIcon class="h-10" />
+			{#if !navCollapsed}
+				KafeIn
+			{/if}
+		</h1>
 
 		<!-- Tabs -->
 		<div class="flex flex-col justify-start rounded-md bg-mocha p-2 text-2xl text-cream">
-			<span class="flex items-center gap-1"><HomeIcon class="h-10 text-almond" /> Home</span>
-			<span class="flex items-center gap-1"><FileReportIcon class="h-10 text-almond" /> Reports</span>
-			<span class="flex items-center gap-1"><HelpIcon class="h-10 text-almond" /> Help</span>
-			<span class="flex items-center gap-1"><UsersIcon class="h-10 text-almond" /> Users</span>
+			<span class="flex items-center gap-1"
+				><HomeIcon class="h-10 text-almond" />
+				{#if !navCollapsed}
+					Home
+				{/if}</span
+			>
+			<span class="flex items-center gap-1"
+				><FileReportIcon class="h-10 text-almond" />
+				{#if !navCollapsed}
+					Reports
+				{/if}</span
+			>
+			<span class="flex items-center gap-1"
+				><HelpIcon class="h-10 text-almond" />
+				{#if !navCollapsed}
+					Help
+				{/if}</span
+			>
+			<span class="flex items-center gap-1"
+				><UsersIcon class="h-10 text-almond" />
+				{#if !navCollapsed}
+					Users
+				{/if}</span
+			>
 		</div>
 
 		<!-- Spacer -->
 		<div class="invisible h-full"></div>
 
 		<!-- Minimize Bar -->
-		<div class="flex justify-between">
+		<div class={["flex justify-between", navCollapsed && "flex-col items-center"]}>
 			<!-- Log Out Button -->
-			<button class="flex items-center gap-1 rounded-full  p-2 px-4">
-				<LogoutIcon class="h-6" /> Log Out
+			<button class="flex items-center gap-1 rounded-full p-2 px-4">
+				<LogoutIcon class="h-6" />
+				{#if !navCollapsed}
+					Log Out
+				{/if}
 			</button>
 
-			<button class="w-fit p-2"> <ArrowCollapseLeftIcon class="h-6" /> </button>
+			<button class="w-fit p-2" onclick={() => (navCollapsed = !navCollapsed)}>
+				<ArrowCollapseLeftIcon class="h-6" />
+			</button>
 		</div>
 	</nav>
 
