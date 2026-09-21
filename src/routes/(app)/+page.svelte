@@ -4,24 +4,24 @@
 
 	import CloudRefreshIcon from '@iconify-svelte/mdi/cloud-refresh';
 	import BaseButton from '$lib/components/interactables/BaseButton.svelte';
+	import { colors } from '$lib/colors';
+	import PageHeader from '$lib/components/text/PageHeader.svelte';
 </script>
 
 <div class="flex flex-col gap-4">
-	<header class="flex items-center justify-between">
-		<h1 class="text-4xl font-semibold">Home</h1>
-
+	<PageHeader pageTitle="Home">
 		<BaseButton palette="caramel">
 			<CloudRefreshIcon class="h-6" />
-			Fetch Sensor Data
+			Refetch Sensor Data
 		</BaseButton>
-	</header>
+	</PageHeader>
 
 	<h1 class="text-4xl">Demo Graph</h1>
-	Not Yet Implemented
+	Dummy Data only!
 	<Plot>
-		<Line x="x" y="y" data={d3.range(50).map((d) => ({ x: d, y: Math.random() }))} stroke="#1e2a38" />
-		<Line x="x" y="y" data={d3.range(50).map((d) => ({ x: d, y: Math.random() }))} stroke="#9e472a" />
-		<Line x="x" y="y" data={d3.range(50).map((d) => ({ x: d, y: Math.random() }))} stroke="#5b7053" />
+		<Line x="x" y="y" data={d3.range(50).map((d) => ({ x: d, y: Math.random() }))} stroke={colors.navy} strokeWidth={4} />
+		<Line x="x" y="y" data={d3.range(50).map((d) => ({ x: d, y: Math.random() }))} stroke={colors.caramel} strokeWidth={4} />
+		<Line x="x" y="y" data={d3.range(50).map((d) => ({ x: d, y: Math.random() }))} stroke={colors.matcha} strokeWidth={4} />
 	</Plot>
 
 	<div class="flex flex-col gap-4">

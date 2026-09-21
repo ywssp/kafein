@@ -1,6 +1,8 @@
 <script lang="ts">
 	import './../layout.css';
 
+	import { slide, fade } from 'svelte/transition';
+
 	// Logo Icons
 	import CoffeeIcon from '@iconify-svelte/mdi/coffee';
 
@@ -12,7 +14,10 @@
 
 	// Minimize Bar Icons
 	import ArrowCollapseLeftIcon from '@iconify-svelte/mdi/arrow-collapse-left';
-	import LogoutIcon from '@iconify-svelte/mdi/logout';
+	import ArrowExpandRightIcon from '@iconify-svelte/mdi/arrow-expand-right';
+	import UserCircleIcon from '@iconify-svelte/mdi/user-circle';
+	// import LogoutIcon from '@iconify-svelte/mdi/logout';
+	import NavigationTab from '$lib/components/layout/NavigationTab.svelte';
 
 	let { children } = $props();
 
@@ -31,73 +36,60 @@
 	<!-- Navigation Bar -->
 	<nav
 		class={[
-			`my-4 flex
-		max-w-1/6 flex-col gap-4 rounded-r-lg
+			`flex
+		w-64 flex-col gap-4 rounded-r-lg h-[calc(100vh-2rem)] fixed top-4 bottom-4 left-0 flex-none
 		bg-espresso
-		p-4 text-milk`,
-			(navCollapsed && 'items-center w-fit') || 'min-w-1/8'
+		overflow-hidden
+		p-4 text-milk transition-all`,
+			(navCollapsed && 'max-w-16 items-center') || 'min-w-64'
 		]}
-
-		onmouseenter={toggleNav}
-		onmouseleave={toggleNav}
 	>
 		<!-- Title -->
 		<h1 class="flex items-center gap-2 align-top text-4xl font-bold">
 			<CoffeeIcon class="h-10" />
 			{#if !navCollapsed}
-				KafeIn
+				<span transition:fade> KafeIn </span>
 			{/if}
 		</h1>
 
 		<!-- Tabs -->
-		<div class="flex flex-col justify-start rounded-md bg-mocha p-2 text-2xl text-cream">
-			<span class="flex items-center gap-1"
-				><HomeIcon class="h-10 text-almond" />
-				{#if !navCollapsed}
-					Home
-				{/if}</span
+		<div class="flex flex-col justify-start gap-4 text-2xl  text-cream">
+			<NavigationTab href="/(app)" label="Home" {navCollapsed}
+				><HomeIcon class="h-8 text-almond" /></NavigationTab
 			>
-			<span class="flex items-center gap-1"
-				><FileReportIcon class="h-10 text-almond" />
-				{#if !navCollapsed}
-					Reports
-				{/if}</span
+			<NavigationTab href="/(app)/reports" label="Reports" {navCollapsed}
+				><FileReportIcon class="h-8 text-almond" /></NavigationTab
 			>
-			<span class="flex items-center gap-1"
-				><HelpIcon class="h-10 text-almond" />
-				{#if !navCollapsed}
-					Help
-				{/if}</span
+			<NavigationTab href="/(app)/help" label="Help" {navCollapsed}
+				><HelpIcon class="h-8 text-almond" /></NavigationTab
 			>
-			<span class="flex items-center gap-1"
-				><UsersIcon class="h-10 text-almond" />
-				{#if !navCollapsed}
-					Users
-				{/if}</span
+			<NavigationTab href="/(app)/users" label="Users" {navCollapsed}
+				><UsersIcon class="h-8 text-almond" /></NavigationTab
 			>
 		</div>
 
-		<!-- Spacer -->
-		<div class="invisible h-full"></div>
-
 		<!-- Minimize Bar -->
-		<div class={["flex justify-between", navCollapsed && "flex-col items-center"]}>
+		<div class={['mt-auto flex justify-between gap-4', navCollapsed && 'flex-col items-center']}>
 			<!-- Log Out Button -->
-			<button class="flex items-center gap-1 rounded-full p-2 px-4">
-				<LogoutIcon class="h-6" />
+			<button class="flex items-center gap-1 rounded-full">
+				<UserCircleIcon class="h-10" />
 				{#if !navCollapsed}
-					Log Out
+					<span transition:fade> Log Out </span>
 				{/if}
 			</button>
 
-			<button class="w-fit p-2" onclick={() => (navCollapsed = !navCollapsed)}>
-				<ArrowCollapseLeftIcon class="h-6" />
+			<button class="w-fit rounded-md p-2 hover:bg-mocha" onclick={toggleNav}>
+				{#if navCollapsed}
+					<ArrowExpandRightIcon class="h-6" />
+				{:else}
+					<ArrowCollapseLeftIcon class="h-6" />
+				{/if}
 			</button>
 		</div>
 	</nav>
 
 	<!-- Main Content -->
-	<main class="dashboard m-4 box-border w-full flex-1 rounded-xl bg-milk p-4">
+	<main class={['m-4 ml-20 flex-1 rounded-lg bg-milk p-4', !navCollapsed && 'ml-68']}>
 		{@render children()}
 	</main>
 </div>
