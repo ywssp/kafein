@@ -20,6 +20,8 @@
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
 		"@tailwindcss/forms": "^0.5.11",
 		"@tailwindcss/vite": "^4.3.0",
+		"@types/bcrypt": "^6.0.0",
+		"@types/bcryptjs": "^2.4.6",
 		"@types/d3": "^7.4.3",
 		"@types/node": "^24",
 		"eslint": "^10.4.1",
@@ -38,6 +40,8 @@
 	},
 	"dependencies": {
 		"@iconify-svelte/mdi": "^1.0.2",
+		"bcrypt": "^6.0.0",
+		"bcryptjs": "^3.0.3",
 		"d3": "^7.9.0",
 		"svelteplot": "^0.14.2"
 	}
