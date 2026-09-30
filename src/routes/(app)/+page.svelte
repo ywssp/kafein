@@ -17,6 +17,47 @@
 	</PageHeader>
 
 	<h1 class="text-4xl">Demo Graph</h1>
+
+	<div class="flex flex-row gap-4">
+		<div class="bg-navy/25 p-2 rounded-md border-navy border-2">
+			<h2 class="font-semibold text-navy text-2xl">Humidity</h2>
+			<Plot>
+				<Line
+					x="x"
+					y="y"
+					data={d3.range(50).map((d) => ({ x: d, y: Math.random() }))}
+					stroke={colors.navy}
+					strokeWidth={4}
+				/>
+			</Plot>
+		</div>
+
+		<div class="bg-berry/25 p-2 rounded-md border-berry border-2">
+			<h2 class="font-semibold text-berry text-2xl">Temperature</h2>
+			<Plot>
+				<Line
+					x="x"
+					y="y"
+					data={d3.range(50).map((d) => ({ x: d, y: Math.random() }))}
+					stroke={colors.berry}
+					strokeWidth={4}
+				/>
+			</Plot>
+		</div>
+		<div class="bg-matcha/25 p-2 rounded-md border-matcha border-2">
+			<h2 class="font-semibold text-matcha text-2xl">TVOC</h2>
+			<Plot>
+				<Line
+					x="x"
+					y="y"
+					data={d3.range(50).map((d) => ({ x: d, y: Math.random() }))}
+					stroke={colors.matcha}
+					strokeWidth={4}
+				/>
+			</Plot>
+		</div>
+	</div>
+	
 	Dummy Data only!
 
 	<div class="flex flex-col gap-4">
