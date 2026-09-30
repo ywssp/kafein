@@ -17,7 +17,6 @@
 		pdfMode = false,
 		inputClass = '',
 		children,
-		...restProps
 	} = $props<{
 		id: string;
 		name?: string;
@@ -33,7 +32,6 @@
 		pdfMode?: boolean;
 		inputClass?: string;
 		children?: Snippet;
-		[key: string]: any;
 	}>();
 
 	const isPassword = $derived(type === 'password');
@@ -67,7 +65,6 @@
 			placeholder=" "
 			bind:value
 			class={baseInputClasses}
-			{...restProps}
 		></textarea>
 	{:else if component === 'select'}
 		<select
@@ -77,7 +74,6 @@
 			{required}
 			bind:value
 			class="{baseInputClasses} cursor-pointer appearance-none"
-			{...restProps}
 		>
 			{@render children?.()}
 		</select>
@@ -92,7 +88,6 @@
 			placeholder=" "
 			bind:value
 			class={baseInputClasses}
-			{...restProps}
 		/>
 	{/if}
 

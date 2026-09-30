@@ -3,7 +3,6 @@
 </script>
 
 <PageHeader pageTitle="Reports">
-	<div></div>
+	<div>Hi!!!</div>
 </PageHeader>
 
-Hi!!!

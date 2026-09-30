@@ -8,10 +8,10 @@
 		navCollapsed = false,
 		label = '',
 		href,
-	}: { children: Snippet; navCollapsed?: boolean; label?: string; href: Parameters<typeof resolve>[0] } = $props();
+	}: { children: Snippet; navCollapsed?: boolean; label?: string; href: ReturnType<typeof resolve> } = $props();
 </script>
 
-<a class="flex items-center gap-1 p-2 rounded-md transition hover:bg-mocha" href={resolve(href)}>
+<a class="flex items-center gap-1 p-2 rounded-md transition hover:bg-mocha" href={href}>
 	<!-- Icon -->
 	{@render children?.()}
 

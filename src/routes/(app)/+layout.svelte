@@ -1,7 +1,8 @@
 <script lang="ts">
 	import './../layout.css';
 
-	import { slide, fade } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
+	import { resolve } from '$app/paths';	
 
 	// Logo Icons
 	import CoffeeIcon from '@iconify-svelte/mdi/coffee';
@@ -54,16 +55,16 @@
 
 		<!-- Tabs -->
 		<div class="flex flex-col justify-start gap-4 text-2xl  text-cream">
-			<NavigationTab href="/(app)" label="Home" {navCollapsed}
+			<NavigationTab href={resolve("/(app)")} label="Home" {navCollapsed}
 				><HomeIcon class="h-8 text-almond" /></NavigationTab
 			>
-			<NavigationTab href="/(app)/reports" label="Reports" {navCollapsed}
+			<NavigationTab href={resolve("/(app)/reports")} label="Reports" {navCollapsed}
 				><FileReportIcon class="h-8 text-almond" /></NavigationTab
 			>
-			<NavigationTab href="/(app)/help" label="Help" {navCollapsed}
+			<NavigationTab href={resolve("/(app)/help")} label="Help" {navCollapsed}
 				><HelpIcon class="h-8 text-almond" /></NavigationTab
 			>
-			<NavigationTab href="/(app)/users" label="Users" {navCollapsed}
+			<NavigationTab href={resolve("/(app)/users")} label="Users" {navCollapsed}
 				><UsersIcon class="h-8 text-almond" /></NavigationTab
 			>
 		</div>
