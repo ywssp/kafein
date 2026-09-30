@@ -6,6 +6,20 @@
 	import BaseButton from '$lib/components/interactables/BaseButton.svelte';
 	import { colors } from '$lib/colors';
 	import PageHeader from '$lib/components/text/PageHeader.svelte';
+
+	function generateData() {
+    let rolling = 50;
+    let velocity = 0;
+	
+    return d3.range(100).map((d) => {
+        // Small acceleration nudge
+        velocity += (Math.random() - 0.5) * 0.2; 
+        velocity *= 0.95; // Friction to keep momentum under control
+        rolling += velocity;
+	
+        return { x: d, y: rolling };
+    });
+	}
 </script>
 
 <div class="flex flex-col gap-4">
@@ -25,7 +39,7 @@
 				<Line
 					x="x"
 					y="y"
-					data={d3.range(50).map((d) => ({ x: d, y: Math.random() }))}
+					data={generateData()}
 					stroke={colors.navy}
 					strokeWidth={4}
 				/>
@@ -38,7 +52,7 @@
 				<Line
 					x="x"
 					y="y"
-					data={d3.range(50).map((d) => ({ x: d, y: Math.random() }))}
+					data={generateData()}
 					stroke={colors.berry}
 					strokeWidth={4}
 				/>
@@ -50,7 +64,7 @@
 				<Line
 					x="x"
 					y="y"
-					data={d3.range(50).map((d) => ({ x: d, y: Math.random() }))}
+					data={generateData()}
 					stroke={colors.matcha}
 					strokeWidth={4}
 				/>
