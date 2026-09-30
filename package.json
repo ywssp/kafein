@@ -47,6 +47,7 @@
 	},
 	"dependencies": {
 		"@iconify-svelte/mdi": "^1.0.2",
+		"@tanstack/svelte-table": "^9.2.4",
 		"bcrypt": "^6.0.0",
 		"bcryptjs": "^3.0.3",
 		"better-sqlite3": "^13.0.2",

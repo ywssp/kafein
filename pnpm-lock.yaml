@@ -11,6 +11,9 @@ importers:
       '@iconify-svelte/mdi':
         specifier: ^1.0.2
         version: 1.0.2(svelte@5.57.0(@typescript-eslint/types@8.69.0))
+      '@tanstack/svelte-table':
+        specifier: ^9.2.4
+        version: 9.2.4(svelte@5.57.0(@typescript-eslint/types@8.69.0))
       bcrypt:
         specifier: ^6.0.0
         version: 6.0.0
@@ -762,6 +765,24 @@ packages:
     resolution: {integrity: sha512-yYU8cogLeSh/ms2jh8Fj7jaba/EWa7Ja6GoUqYZaraEuCI5YS6ms6ObZgjjedm+jm6XZjdNRWBpPP6Z86oOxcw==}
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
+
+  '@tanstack/store@0.11.2':
+    resolution: {integrity: sha512-sJ4mjol8uQsHV0gOJzzjwXfh2Fwm+Sz0+8deqiTm4jGbMdjzNSW+xZCFm0kUa870uhd8yi+DpKnZb5Kc4apa0Q==}
+
+  '@tanstack/svelte-store@0.12.2':
+    resolution: {integrity: sha512-zI+LjpxnbfKm5vDogx07RN12oOuI6LR+GysrQ4aVCuw76pY8pwcPT2DU9JGIX+L+r1dzsxBGac8XZETzLGQxiA==}
+    peerDependencies:
+      svelte: ^5.0.0
+
+  '@tanstack/svelte-table@9.2.4':
+    resolution: {integrity: sha512-s1A82cJhp3e2Lx3mhVJnhswnGJihBaFNs+gf3/jsDdmKa/zjUDY43Z7kWLZ8408yuNwFG0dR4WGdJ0g8dnuMkQ==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      svelte: ^5.0.0
+
+  '@tanstack/table-core@9.2.4':
+    resolution: {integrity: sha512-GwdDyGGr6UXAtubF14yAwcXvdaogqfsQgIk89Suebjxob/Rjq2xvfmXsjDF1rQmKmhHsJm9TOY7myxv3i6geJw==}
+    engines: {node: '>=20'}
 
   '@types/bcrypt@6.0.0':
     resolution: {integrity: sha512-/oJGukuH3D2+D+3H4JWLaAsJ/ji86dhRidzZ/Od7H/i8g+aCmvkeCc6Ni/f9uxGLSQVCRZkX2/lqEFG2BvWtlQ==}
@@ -2556,6 +2577,23 @@ snapshots:
       '@tailwindcss/oxide': 4.3.3
       tailwindcss: 4.3.3
       vite: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)
+
+  '@tanstack/store@0.11.2': {}
+
+  '@tanstack/svelte-store@0.12.2(svelte@5.57.0(@typescript-eslint/types@8.69.0))':
+    dependencies:
+      '@tanstack/store': 0.11.2
+      svelte: 5.57.0(@typescript-eslint/types@8.69.0)
+
+  '@tanstack/svelte-table@9.2.4(svelte@5.57.0(@typescript-eslint/types@8.69.0))':
+    dependencies:
+      '@tanstack/svelte-store': 0.12.2(svelte@5.57.0(@typescript-eslint/types@8.69.0))
+      '@tanstack/table-core': 9.2.4
+      svelte: 5.57.0(@typescript-eslint/types@8.69.0)
+
+  '@tanstack/table-core@9.2.4':
+    dependencies:
+      '@tanstack/store': 0.11.2
 
   '@types/bcrypt@6.0.0':
     dependencies:
