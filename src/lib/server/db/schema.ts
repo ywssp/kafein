@@ -4,7 +4,7 @@ export const users = sqliteTable('users', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
-	username: text('username').notNull(),
+  username: text('username').notNull(),
   password: text('password').notNull(),
   totpSecret: text('totpSecret').notNull(),
 	sessionToken: text('sessionToken'),
