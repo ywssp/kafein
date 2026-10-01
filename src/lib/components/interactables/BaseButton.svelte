@@ -36,7 +36,7 @@
 		lavender: 'bg-lavender text-milk hover:border-mocha'
 	};
 
-	let { children, palette }: { children: Snippet; palette: variants } = $props();
+	let { children, palette, onclick = () => {} }: { children: Snippet; palette: variants; onclick: () => void } = $props();
 </script>
 
 <button
@@ -44,6 +44,7 @@
 		palettes[palette],
 		'transition flex items-center gap-1 rounded-md border-2 border-transparent p-2 px-4'
 	]}
+	onclick={onclick}
 >
 	{@render children?.()}
 </button>

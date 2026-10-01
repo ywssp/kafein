@@ -67,7 +67,7 @@
 			<NavigationTab href={resolve("/(app)/users")} label="Users" {navCollapsed}
 				><UsersIcon class="h-8 text-almond" /></NavigationTab
 			>
-			<NavigationTab href={resolve("/(app)/experiment_list")} label="Experiments" {navCollapsed}
+			<NavigationTab href={resolve("/(app)/experiments")} label="Experiments" {navCollapsed}
 				><FileReportIcon class="h-8 text-almond" /></NavigationTab
 			>
 		</div>
@@ -78,7 +78,7 @@
 			<button class="flex items-center gap-1 rounded-full">
 				<UserCircleIcon class="h-10" />
 				{#if !navCollapsed}
-					<span transition:fade> Log Out </span>
+					<a transition:fade href={resolve("/(security)/login")}> Log Out </a>
 				{/if}
 			</button>
 
