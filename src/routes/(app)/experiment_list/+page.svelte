@@ -1,5 +1,6 @@
 <script>
-    // 1. State setup using Svelte 5 runes
+import { goto } from '$app/navigation';
+
     let searchQuery = $state('');
     let statusFilter = $state('All');
 
@@ -43,7 +44,7 @@
                     <h1 class="text-3xl font-semibold text-white mb-2">Experiments</h1>
                     <p class="text-textMuted">Search and monitor batch statuses.</p>
                 </div>
-                <button class="bg-caramel hover:bg-[#a6652c] text-white px-5 py-2.5 rounded shadow-sm font-medium transition-colors flex items-center space-x-2">
+                <button onclick={() => goto('/experiment_list/new')} class="bg-caramel hover:bg-[#a6652c] text-white px-5 py-2.5 rounded shadow-sm font-medium transition-colors flex items-center space-x-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     <span>New Experiment</span>
                 </button>
@@ -119,7 +120,6 @@
         </div>
     </main>
 </div>
-
 <style>
     :global(body) {
         background-color: #2b211e;
