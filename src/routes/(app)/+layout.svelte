@@ -93,7 +93,7 @@
 	</nav>
 
 	<!-- Main Content -->
-	<main class={['m-4 ml-20 flex-1 rounded-lg bg-milk p-4', !navCollapsed && 'ml-68']}>
+	<main class={['m-4 ml-20 min-w-0 flex-1 rounded-lg bg-milk p-4', !navCollapsed && 'ml-68']}>
 		{@render children()}
 	</main>
 </div>

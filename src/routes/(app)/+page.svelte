@@ -8,21 +8,25 @@
 	import PageHeader from '$lib/components/text/PageHeader.svelte';
 
 	function generateData() {
-    let rolling = 50;
-    let velocity = 0;
-	
-    return d3.range(100).map((d) => {
-        // Small acceleration nudge
-        velocity += (Math.random() - 0.5) * 0.2; 
-        velocity *= 0.95; // Friction to keep momentum under control
-        rolling += velocity;
-	
-        return { x: d, y: rolling };
-    });
+		let rolling = 50;
+		let velocity = 0;
+
+		return d3.range(100).map((d) => {
+			// Small acceleration nudge
+			velocity += (Math.random() - 0.5) * 0.2;
+			velocity *= 0.95; // Friction to keep momentum under control
+			rolling += velocity;
+
+			return { x: d, y: rolling };
+		});
+	}
+
+	function chartHeight(width: number) {
+		return Math.max(140, Math.min(180, width * 0.22));
 	}
 </script>
 
-<div class="flex flex-col gap-4">
+<div class="flex min-w-0 flex-col gap-4">
 	<PageHeader pageTitle="Home">
 		<BaseButton palette="caramel">
 			<CloudRefreshIcon class="h-6" />
@@ -30,51 +34,40 @@
 		</BaseButton>
 	</PageHeader>
 
-	<h1 class="text-4xl">Demo Graph</h1>
+	<h1 class="text-2xl">Demo Graphs</h1>
 
-	<div class="flex flex-row gap-4">
-		<div class="bg-navy/25 p-2 rounded-md border-navy border-2">
-			<h2 class="font-semibold text-navy text-2xl">Humidity</h2>
-			<Plot>
-				<Line
-					x="x"
-					y="y"
-					data={generateData()}
-					stroke={colors.navy}
-					strokeWidth={4}
-				/>
+	<div class="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
+		<div class="min-w-0 rounded-md border-2 border-navy bg-navy/25 p-2">
+			<h2 class="text-2xl font-semibold text-navy">Humidity (%)</h2>
+			<Plot height={chartHeight}>
+				<Line x="x" y="y" data={generateData()} stroke={colors.navy} strokeWidth={4} />
 			</Plot>
 		</div>
-
-		<div class="bg-berry/25 p-2 rounded-md border-berry border-2">
-			<h2 class="font-semibold text-berry text-2xl">Temperature</h2>
-			<Plot>
-				<Line
-					x="x"
-					y="y"
-					data={generateData()}
-					stroke={colors.berry}
-					strokeWidth={4}
-				/>
-			</Plot>
-		</div>
-		<div class="bg-matcha/25 p-2 rounded-md border-matcha border-2">
-			<h2 class="font-semibold text-matcha text-2xl">TVOC</h2>
-			<Plot>
-				<Line
-					x="x"
-					y="y"
-					data={generateData()}
-					stroke={colors.matcha}
-					strokeWidth={4}
-				/>
+		<div class="min-w-0 rounded-md border-2 border-berry bg-berry/25 p-2">
+			<h2 class="text-2xl font-semibold text-berry">Temperature (C)</h2>
+			<Plot height={chartHeight}>
+				<Line x="x" y="y" data={generateData()} stroke={colors.berry} strokeWidth={4} />
 			</Plot>
 		</div>
 	</div>
-	
-	Dummy Data only!
 
-	<div class="flex flex-col gap-4">
+	<div class="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
+		<div class="min-w-0 rounded-md border-2 border-matcha bg-matcha/25 p-2">
+			<h2 class="text-2xl font-semibold text-matcha">Total Volatile Organic Compounds (ug/m3)</h2>
+			<Plot height={chartHeight}>
+				<Line x="x" y="y" data={generateData()} stroke={colors.matcha} strokeWidth={4} />
+			</Plot>
+		</div>
+
+		<div class="min-w-0 rounded-md border-2 border-caramel bg-caramel/25 p-2">
+			<h2 class="text-2xl font-semibold text-caramel">Load Cell (g)</h2>
+			<Plot height={chartHeight}>
+				<Line x="x" y="y" data={generateData()} stroke={colors.caramel} strokeWidth={4} />
+			</Plot>
+		</div>
+	</div>
+
+	<div class="invisible flex flex-col gap-4">
 		<h1 class="mb-6 text-4xl font-bold text-ground">Color Tests</h1>
 
 		<!-- Accent Colors Row -->
