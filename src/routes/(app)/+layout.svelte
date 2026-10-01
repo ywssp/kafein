@@ -67,6 +67,9 @@
 			<NavigationTab href={resolve("/(app)/users")} label="Users" {navCollapsed}
 				><UsersIcon class="h-8 text-almond" /></NavigationTab
 			>
+			<NavigationTab href={resolve("/(app)/experiment_list")} label="Experiments" {navCollapsed}
+				><FileReportIcon class="h-8 text-almond" /></NavigationTab
+			>
 		</div>
 
 		<!-- Minimize Bar -->
