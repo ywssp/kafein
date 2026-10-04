@@ -58,9 +58,9 @@
 			<NavigationTab href={resolve("/(app)")} label="Home" {navCollapsed}
 				><HomeIcon class="h-8 text-almond" /></NavigationTab
 			>
-			<NavigationTab href={resolve("/(app)/reports")} label="Reports" {navCollapsed}
+			<!-- <NavigationTab href={resolve("/(app)/reports")} label="Reports" {navCollapsed}
 				><FileReportIcon class="h-8 text-almond" /></NavigationTab
-			>
+			> -->
 			<NavigationTab href={resolve("/(app)/help")} label="Help" {navCollapsed}
 				><HelpIcon class="h-8 text-almond" /></NavigationTab
 			>
