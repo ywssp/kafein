@@ -42,7 +42,7 @@
 <button
 	class={[
 		palettes[palette],
-		'transition flex items-center gap-1 rounded-md border-2 border-transparent p-2 px-4'
+		'transition flex items-center  gap-1 rounded-md border-2 border-transparent p-2 px-4'
 	]}
 	onclick={onclick}
 >
