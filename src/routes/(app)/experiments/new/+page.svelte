@@ -257,8 +257,8 @@
 								}}
 								oninput={(e) => {
 								form.interval = e.currentTarget.value.replace(/^0+(?=\d)/, '');
-        						if (Number(e.currentTarget.value) > 59) {
-            					form.interval = '59';}
+        						if (Number(e.currentTarget.value) > 60) {
+            					form.interval = '60';}
     							}}	
 							bind:value={form.interval}
 							class="border-borderClr bg-mainbg text-textMain block w-full rounded-md border px-3 py-2 focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"
