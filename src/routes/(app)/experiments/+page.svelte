@@ -167,16 +167,14 @@
 							</span>
 						</td>
 						<td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
-							<span
-								class="rounded-md p-2 text-caramel transition-colors group-hover:bg-espresso group-hover:text-almond hover:bg-almond hover:text-ground hover:underline"
-							>
-								View
-							</span>
+							<a
+    						href={resolve(`/experiments/${exp.id}`)}
+    						class="rounded-md p-2 text-caramel transition-colors group-hover:bg-espresso group-hover:text-almond hover:bg-almond hover:text-ground hover:underline">
+    							View
+							</a>
 						</td>
 					</tr>
 				{/each}
-
-				<!-- Svelte conditional rendering if nothing matches the filters -->
 				{#if filteredExperiments.length === 0}
 					<tr>
 						<td colspan="6" class="px-6 py-8 text-center text-almond italic">

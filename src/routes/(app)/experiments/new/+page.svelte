@@ -97,9 +97,14 @@
 					>
 					<div class="flex items-center space-x-2">
 						<input
-							type="number"
-							id="mass"
-							bind:value={form.initialMass}
+    					type="number"
+    					id="duration"
+						bind:value={form.initialMass}
+    					min="0"
+    					onkeydown={(e) => {
+        				if (e.key.length > 1 || e.metaKey) return;
+        				if (!/^[0-9.]$/.test(e.key)) {e.preventDefault();}
+						}}
 							class="border-borderClr bg-mainbg text-textMain block w-full rounded-md border px-3 py-2 focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"
 						/>
 						<span class="text-textMuted">g</span>
@@ -151,9 +156,14 @@
 					<label for="len" class="text-textMuted mb-1 block text-sm font-medium">Length</label>
 					<div class="flex items-center space-x-2">
 						<input
-							type="number"
-							id="len"
-							bind:value={form.length}
+    					type="number"
+    					id="length"
+    					min="0"
+						bind:value={form.length}
+    					onkeydown={(e) => {
+        				if (e.key.length > 1 || e.metaKey) return;
+        				if (!/^[0-9.]$/.test(e.key)) {e.preventDefault();}
+						}}
 							class="border-borderClr bg-mainbg text-textMain block w-full rounded-md border px-3 py-2 focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"
 						/>
 						<span class="text-textMuted">cm</span>
@@ -165,7 +175,15 @@
 						<input
 							type="number"
 							id="width"
+							min="0"
 							bind:value={form.width}
+							onkeydown={(e) => {
+        				if (e.key.length > 1 || e.metaKey) return;
+        				if (!/^[0-9.]$/.test(e.key)) {e.preventDefault();}
+						}}
+						oninput={(e) => {
+								form.width = e.currentTarget.value.replace(/^0+(?=\d)/, '');
+								}}
 							class="border-borderClr bg-mainbg text-textMain block w-full rounded-md border px-3 py-2 focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"
 						/>
 						<span class="text-textMuted">cm</span>
@@ -177,7 +195,15 @@
 						<input
 							type="number"
 							id="height"
+							min="0"
 							bind:value={form.height}
+							onkeydown={(e) => {
+        				if (e.key.length > 1 || e.metaKey) return;
+        				if (!/^[0-9.]$/.test(e.key)) {e.preventDefault();}
+						}}
+						oninput={(e) => {
+								form.width = e.currentTarget.value.replace(/^0+(?=\d)/, '');
+								}}
 							class="border-borderClr bg-mainbg text-textMain block w-full rounded-md border px-3 py-2 focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"
 						/>
 						<span class="text-textMuted">cm</span>
@@ -201,11 +227,18 @@
 					>
 					<div class="flex items-center space-x-2">
 						<input
-							type="number"
-							id="duration"
-							bind:value={form.duration}
-							class="border-borderClr bg-mainbg text-textMain block w-full rounded-md border px-3 py-2 focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"
-						/>
+    					type="number"
+    					id="duration"
+    					min="0"
+    					onkeydown={(e) => {
+        				if (e.key.length > 1 || e.metaKey) return;
+        				if (!/^[0-9.]$/.test(e.key)) {e.preventDefault();}
+						}}
+						oninput={(e) => {
+								form.duration = e.currentTarget.value.replace(/^0+(?=\d)/, '');
+								}}
+    					bind:value={form.duration}
+    					class="border-borderClr bg-mainbg text-textMain block w-full rounded-md border px-3 py-2 focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"/>
 						<span class="text-textMuted">hours</span>
 					</div>
 				</div>
@@ -217,6 +250,16 @@
 						<input
 							type="number"
 							id="interval"
+							min="0"
+							onkeydown={(e) => {
+								if (e.key.length > 1 || e.metaKey) return;
+        						if (!/^[0-9.]$/.test(e.key)) {e.preventDefault();}
+								}}
+								oninput={(e) => {
+								form.interval = e.currentTarget.value.replace(/^0+(?=\d)/, '');
+        						if (Number(e.currentTarget.value) > 59) {
+            					form.interval = '59';}
+    							}}	
 							bind:value={form.interval}
 							class="border-borderClr bg-mainbg text-textMain block w-full rounded-md border px-3 py-2 focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"
 						/>
