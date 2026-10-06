@@ -82,7 +82,7 @@
 	</div>
 
 	<!-- Filter Controls -->
-	<div class="bg-mocha border-2 border-almond border-b-transparent flex flex-wrap items-end gap-6 rounded-t-lg border p-5">
+	<div class="bg-mocha border-2 border-almond border-b-transparent flex flex-wrap items-end gap-6 rounded-t-lg p-5">
 		<div class="min-w-50 flex-1">
 			<label class="text-textMuted mb-1 block text-sm font-medium" for="search"
 				>Search experiment</label

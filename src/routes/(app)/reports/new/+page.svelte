@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
+	
 	let form = $state({
 		name: '',
 		experimentId: 'EXP-2026-009',
