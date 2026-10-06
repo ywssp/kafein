@@ -65,7 +65,7 @@
 <div class="mx-auto w-full max-w-5xl p-8">
 	<div class="mb-8 flex items-end justify-between">
 		<div>
-			<h1 class="mb-2 text-3xl font-semibold text-white">Experiments</h1>
+			<h1 class="mb-2 text-3xl font-semibold text-ground">Experiments</h1>
 			<p class="text-textMuted">Search and monitor batch statuses.</p>
 		</div>
 		<button
@@ -152,7 +152,7 @@
 			</thead>
 			<tbody class="divide-borderClr bg-panel divide-y">
 				{#each filteredExperiments as exp (exp.id)}
-					<tr class="group text-white transition-colors hover:bg-slate">
+					<tr class="group text-ground transition-colors hover:bg-slate">
     					<td class="px-6 py-4 text-sm font-medium whitespace-nowrap">{exp.id}</td>
 						<td class="text-textMain px-6 py-4 text-sm whitespace-nowrap">{exp.batch}</td>
 						<td class="text-textMain px-6 py-4 text-sm whitespace-nowrap">{exp.package}</td>

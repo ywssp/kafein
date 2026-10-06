@@ -291,7 +291,7 @@
             </button>
             -->
 			<button
-				onclick={() => goto('/experiment_list')}
+				onclick={() => goto('/(app)/experiments')}
 				class="flex items-center space-x-2 rounded bg-caramel px-5 py-2.5 font-medium text-white shadow-sm transition-colors hover:bg-[#a6652c]"
 			>
 				<span>Back to List</span>

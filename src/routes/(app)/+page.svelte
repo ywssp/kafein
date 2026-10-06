@@ -227,7 +227,7 @@ function trendLabel(trend: string) {
             onmouseleave={handleMouseLeave}>
             
             <div class="flex flex-row justify-between">
-                <h2 class="text-2xl font-semibold text-matcha">Total Volatile Organic Compounds (µg/m³)</h2>
+                <h2 class="text-2xl font-semibold text-matcha">Total Volatile Organic Compounds</h2>
                 
                 <div class="flex flex-row justify-between gap-2 rounded-md bg-matcha p-1 px-2 text-milk">
                     <div class="flex flex-col justify-between text-xs">
