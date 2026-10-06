@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Plot, Line } from 'svelteplot';
-	import { slide } from 'svelte/transition';
 
 	import ArrowCollapseUpIcon from '@iconify-svelte/mdi/arrow-collapse-up';
 	import ArrowCollapseDownIcon from '@iconify-svelte/mdi/arrow-collapse-down';
@@ -52,6 +51,7 @@
 
 	function handleMouseEnter() {
 		clearTimeout(hoverTimer);
+		
 		hoverTimer = setTimeout(() => {
 			isExpanded = true;
 		}, 10);
@@ -133,12 +133,16 @@
 		</div>
 	</div>
 
-	{#if isExpanded}
+	<div
+		class:grid-rows-[1fr]={isExpanded}
+		class:grid-rows-[0fr]={!isExpanded}
+		class="grid transition-[grid-template-rows] duration-300 ease-out"
+	>
+		<div class="min-h-0 overflow-hidden">
 		<hr class={`my-2 border-t-2 ${themeColors.body}`} />
-		<div transition:slide={{ duration: 300 }} class="flex flex-col overflow-hidden">
 			<Plot height={chartHeight}>
 				<Line x="x" y="y" {data} stroke={colors.almond} strokeWidth={4} />
 			</Plot>
 		</div>
-	{/if}
+	</div>
 </div>

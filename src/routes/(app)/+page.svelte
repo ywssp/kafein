@@ -1,17 +1,11 @@
 <script lang="ts">
-	import { Plot, Line } from 'svelteplot';
 	import * as d3 from 'd3';
-	import { slide } from 'svelte/transition';
-	
+
 	import CloudRefreshIcon from '@iconify-svelte/mdi/cloud-refresh';
-	import ArrowCollapseUpIcon from '@iconify-svelte/mdi/arrow-collapse-up';
-	import ArrowCollapseDownIcon from '@iconify-svelte/mdi/arrow-collapse-down';
-	import ArrowUpIcon from '@iconify-svelte/mdi/arrow-up';
-	import ArrowDownIcon from '@iconify-svelte/mdi/arrow-down';
-	import ArrowRightIcon from '@iconify-svelte/mdi/arrow-right';
+	import ClockIcon from '@iconify-svelte/mdi/clock';
+	import AlertIcon from '@iconify-svelte/mdi/alert';
 
 	import BaseButton from '$lib/components/interactables/BaseButton.svelte';
-	import { colors } from '$lib/colors';
 	import PageHeader from '$lib/components/text/PageHeader.svelte';
 	import DashboardGraph from '$lib/components/graphs/DashboardGraph.svelte';
 
@@ -27,48 +21,6 @@
 
 			return { x: d, y: rolling };
 		});
-	}
-
-	function chartHeight(width: number) {
-		return Math.max(140, Math.min(180, width * 0.22));
-	}
-	
-	let expandedChart = $state<string | null>(null);
-	let hoverTimer: ReturnType<typeof setTimeout>;
-	function handleMouseEnter(chartId: string) {
-		clearTimeout(hoverTimer);
-		hoverTimer = setTimeout(() => {
-			expandedChart = chartId;
-		}, 10);
-	}
-	function handleMouseLeave() {
-		clearTimeout(hoverTimer);
-		expandedChart = null; // Collapses the chart when mouse leaves
-	}
-
-	function getMinMax(data: { x: number; y: number }[]) {
-		const min = d3.min(data, (d) => d.y) ?? 0;
-		const max = d3.max(data, (d) => d.y) ?? 0;
-		return { min, max };
-	}
-
-	function getTrend(data: { x: number; y: number }[]) {
-		if (data.length < 2) return 'stable';
-
-		const recent = data[data.length - 1].y;
-		const previous = data[data.length - 6]?.y ?? data[data.length - 2].y;
-		const difference = recent - previous;
-
-		if (difference > 0.5) return 'rising';
-		if (difference < -0.5) return 'falling';
-
-		return 'stable';
-	}
-
-	function trendLabel(trend: string) {
-		if (trend === 'rising') return 'Rising';
-		if (trend === 'falling') return 'Falling';
-		return 'Stable';
 	}
 
 	function getRate(data: { x: number; y: number }[]) {
@@ -131,122 +83,141 @@
 		</BaseButton>
 	</PageHeader>
 
-
-	<DashboardGraph data={humidity} label="Humidity" unit="%" theme="navy"/>
-	<DashboardGraph data={temperature} label="Temperature" unit="°C" theme="berry"/>
-	<DashboardGraph data={tvoc} label="Total Volatile Organic Compounds" unit=" µg/m³" theme="matcha" />
-	<DashboardGraph data={weight} label="Spent Coffee Grounds Weight" unit=" g" theme="caramel"/>
+	<DashboardGraph data={humidity} label="Humidity" unit="%" theme="navy" />
+	<DashboardGraph data={temperature} label="Temperature" unit="°C" theme="berry" />
+	<DashboardGraph
+		data={tvoc}
+		label="Total Volatile Organic Compounds"
+		unit=" µg/m³"
+		theme="matcha"
+	/>
+	<DashboardGraph data={weight} label="Spent Coffee Grounds Weight" unit=" g" theme="caramel" />
 
 	<hr class="my-2 border-t-2 border-solid border-almond" />
 
 	<!-- Experiment status -->
-	<section class="rounded-lg border border-milk/20 bg-espresso/60 p-4 text-milk">
-		<div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-			<h2 class="text-2xl font-semibold">Current Experiment</h2>
-			<span class="rounded-full bg-matcha px-3 py-1 text-sm font-semibold text-espresso"
+	<section class="flex flex-col gap-4 rounded-lg border border-milk/20 bg-almond p-4 text-espresso">
+		<div class="flex flex-wrap items-center justify-between gap-2">
+			<h2 class="flex flex-row items-center gap-1 text-2xl font-semibold leading-none">
+				<ClockIcon class="h-6" />
+				Current Experiment
+			</h2>
+			<span class="rounded-full bg-matcha px-3 py-1 text-sm font-semibold text-milk"
 				>● {experimentStatus}</span
 			>
 		</div>
+
 		<div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-5">
 			<div>
-				<p class="text-milk/60">Experiment ID</p>
+				<p class="opacity-60">Experiment ID</p>
 				<p class="font-semibold">{experimentId}</p>
 			</div>
 			<div>
-				<p class="text-milk/60">Started</p>
+				<p class="opacity-60">Started</p>
 				<p class="font-semibold">{startedAt}</p>
 			</div>
 			<div>
-				<p class="text-milk/60">Elapsed Time</p>
+				<p class="opacity-60">Elapsed Time</p>
 				<p class="font-semibold">{elapsedTime}</p>
 			</div>
 			<div>
-				<p class="text-milk/60">Last Updated</p>
+				<p class="opacity-60">Last Updated</p>
 				<p class="font-semibold">9:35 AM</p>
 			</div>
 			<div>
-				<p class="text-milk/60">Sensor Status</p>
+				<p class="opacity-60">Sensor Status</p>
 				<p class="font-semibold text-matcha">● Connected</p>
 			</div>
 		</div>
+
+		<!-- Performance and decision support -->
+		<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+			<section
+				class="flex h-full flex-col rounded-lg border-2 border-mocha bg-caramel p-4 text-milk"
+			>
+				<h2 class="mb-4 text-2xl font-semibold">SCG Performance Summary</h2>
+				<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+					<div>
+						<p class="text-sm opacity-60">Initial Mass</p>
+						<p class="text-xl font-bold">{initialMass} g</p>
+					</div>
+					<div>
+						<p class="text-sm opacity-60">Current Mass</p>
+						<p class="text-xl font-bold">{currentMass} g</p>
+					</div>
+					<div>
+						<p class="text-sm opacity-60">Mass Gain</p>
+						<p class="text-xl font-bold">{massGain} g</p>
+					</div>
+					<div>
+						<p class="text-sm opacity-60">Adsorption Rate</p>
+						<p class="text-xl font-bold">{adsorptionRate} g/min</p>
+					</div>
+				</div>
+
+				<div class="mt-auto pt-4">
+					<div class=" rounded-md bg-espresso p-3">
+						<p class="text-sm opacity-60">Estimated SCG Condition</p>
+						<p class="text-lg font-semibold">{scgCondition}</p>
+					</div>
+				</div>
+			</section>
+
+			<section class="flex h-full flex-col rounded-lg border-2 border-mocha bg-navy p-4 text-milk">
+				<h2 class="mb-4 text-2xl font-semibold">Prediction and Decision Support</h2>
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<p class="text-sm opacity-60">RH Threshold</p>
+						<p class="text-xl font-bold">{rhThreshold}%</p>
+					</div>
+					<div>
+						<p class="text-sm opacity-60">RH Trend</p>
+						<p class="text-xl font-bold">{rhTrend}</p>
+					</div>
+					<div>
+						<p class="text-sm opacity-60">Estimated Protection Time</p>
+						<p class="text-xl font-bold">{estimatedProtectionTime} hrs</p>
+					</div>
+					<div>
+						<p class="text-sm opacity-60">Model Status</p>
+						<p class="text-xl font-bold text-matcha">Prototype</p>
+					</div>
+				</div>
+				<div class="mt-auto pt-4">
+					<div class="rounded-md bg-espresso p-3">
+						<p class="text-sm opacity-60">Recommendation</p>
+						<p class="font-semibold">{recommendation}</p>
+					</div>
+				</div>
+			</section>
+		</div>
 	</section>
 
-	<!-- Performance and decision support -->
-	<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-		<section class="rounded-lg border-2 border-caramel bg-caramel/15 p-4 text-milk">
-			<h2 class="mb-4 text-2xl font-semibold text-caramel">SCG Performance Summary</h2>
-			<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-				<div>
-					<p class="text-sm text-milk/60">Initial Mass</p>
-					<p class="text-xl font-bold">{initialMass} g</p>
-				</div>
-				<div>
-					<p class="text-sm text-milk/60">Current Mass</p>
-					<p class="text-xl font-bold">{currentMass} g</p>
-				</div>
-				<div>
-					<p class="text-sm text-milk/60">Mass Gain</p>
-					<p class="text-xl font-bold">{massGain} g</p>
-				</div>
-				<div>
-					<p class="text-sm text-milk/60">Adsorption Rate</p>
-					<p class="text-xl font-bold">{adsorptionRate} g/min</p>
-				</div>
-			</div>
-			<div class="mt-4 rounded-md bg-espresso/70 p-3">
-				<p class="text-sm text-milk/60">Estimated SCG Condition</p>
-				<p class="text-lg font-semibold text-caramel">{scgCondition}</p>
-			</div>
-		</section>
-
-		<section class="rounded-lg border-2 border-navy bg-navy/15 p-4 text-milk">
-			<h2 class="mb-4 text-2xl font-semibold text-navy">Prediction and Decision Support</h2>
-			<div class="grid grid-cols-2 gap-4">
-				<div>
-					<p class="text-sm text-milk/60">RH Threshold</p>
-					<p class="text-xl font-bold">{rhThreshold}%</p>
-				</div>
-				<div>
-					<p class="text-sm text-milk/60">RH Trend</p>
-					<p class="text-xl font-bold">{rhTrend}</p>
-				</div>
-				<div>
-					<p class="text-sm text-milk/60">Estimated Protection Time</p>
-					<p class="text-xl font-bold">{estimatedProtectionTime} hrs</p>
-				</div>
-				<div>
-					<p class="text-sm text-milk/60">Model Status</p>
-					<p class="text-xl font-bold text-matcha">Prototype</p>
-				</div>
-			</div>
-			<div class="mt-4 rounded-md bg-navy/40 p-3">
-				<p class="text-sm text-milk/60">Recommendation</p>
-				<p class="font-semibold">{recommendation}</p>
-			</div>
-		</section>
-	</div>
-
 	<!-- Alerts -->
-	<section class="rounded-lg border border-milk/20 bg-espresso/50 p-4 text-milk">
-		<h2 class="mb-3 text-2xl font-semibold">Alerts and Notifications</h2>
+	<section class="flex flex-col gap-4 rounded-lg border border-milk/20 bg-almond p-4 text-espresso">
+		<h2 class="flex flex-row items-center gap-1 text-2xl font-semibold leading-none">
+			<AlertIcon class="h-6" />
+			Alerts and Notifications
+		</h2>
+		
 		<div class="space-y-2 text-sm">
-			<p class="rounded-md bg-matcha/20 p-2 text-matcha">● All sensors are operating normally.</p>
-			<p class="rounded-md bg-navy/20 p-2 text-navy">
-				● Relative humidity is {rhTrend.toLowerCase()}.
+			<p class="rounded-md bg-matcha p-2 text-milk">● All sensors are operating normally</p>
+			<p class="rounded-md bg-navy p-2 text-milk">
+				● Relative humidity is {rhTrend.toLowerCase()}
 			</p>
-			<p class="rounded-md bg-caramel/20 p-2 text-caramel">● SCG mass gain is being monitored.</p>
+			<p class="rounded-md bg-caramel p-2 text-milk">● SCG mass gain is being monitored</p>
 		</div>
 	</section>
 
 	<!-- Recent readings -->
-	<section class="rounded-lg border border-milk/20 bg-espresso/50 p-4 text-milk">
+	<section class="rounded-lg border border-mocha bg-almond p-4 text-espresso">
 		<div class="mb-3 flex flex-wrap items-center justify-between gap-2">
 			<h2 class="text-2xl font-semibold">Recent Sensor Readings</h2>
 			<BaseButton palette="navy" onclick={() => {}}>View Full Report</BaseButton>
 		</div>
 		<div class="overflow-x-auto">
-			<table class="w-full min-w-[620px] text-left text-sm">
-				<thead class="border-b border-milk/20 text-milk/60">
+			<table class="w-full min-w-155 text-left text-sm">
+				<thead class="border-b border-mocha/75 text-ground">
 					<tr
 						><th class="p-2">Time</th><th class="p-2">RH</th><th class="p-2">Temperature</th><th
 							class="p-2">eTVOC</th
@@ -255,7 +226,7 @@
 				</thead>
 				<tbody>
 					{#each recentReadings as reading (reading.time)}
-						<tr class="border-b border-milk/10"
+						<tr class="border-b border-mocha/50"
 							><td class="p-2">{reading.time}</td><td class="p-2">{reading.humidity}%</td><td
 								class="p-2">{reading.temperature} °C</td
 							><td class="p-2">{reading.tvoc}</td><td class="p-2">{reading.mass.toFixed(1)} g</td
