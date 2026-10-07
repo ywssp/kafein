@@ -107,12 +107,12 @@
 	<!--If ever there is no active experiment-->
 		{#if !experiment}
 				<section
-			class="flex flex-col items-center gap-4 rounded-lg border border-milk/20 bg-almond p-10 text-center text-espresso"
+			class="flex flex-col items-center gap-4 rounded-lg  p-10 text-center text-milk"
 		>
 			<ClockIcon class="h-12 opacity-60" />
 			<h2 class="text-2xl font-semibold">No current active experiment</h2>
 			<p class="max-w-md text-sm opacity-70">
-				Go to the Reports page to activate a paused experiment, or create a new experiment to start
+				Go to the Reports page to resume a paused experiment, or create a new experiment to start
 				monitoring.
 			</p>
 			<div class="flex flex-wrap justify-center gap-3">

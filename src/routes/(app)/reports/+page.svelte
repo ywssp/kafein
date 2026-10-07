@@ -23,39 +23,41 @@
 	);
 
 	function getStatusColor(status: ReportStatus) {
-		const baseClasses = 'border-2 transition-colors'
-		if (status === 'Active') return `${baseClasses} bg-caramel/30 group-hover:bg-caramel group-hover:text-ground text-caramel border-caramel`;
-		if (status === 'Complete') return `${baseClasses} bg-matcha/30 group-hover:bg-matcha group-hover:text-ground text-matcha border-matcha`;
-		if (status === 'Paused') return `${baseClasses} bg-lavender/30 group-hover:bg-lavender group-hover:text-ground text-lavender border-lavender`;
+		const baseClasses = 'border-2 transition-colors';
+		if (status === 'Active')
+			return `${baseClasses} bg-caramel/30 group-hover:bg-caramel group-hover:text-ground text-caramel border-caramel`;
+		if (status === 'Complete')
+			return `${baseClasses} bg-matcha/30 group-hover:bg-matcha group-hover:text-ground text-matcha border-matcha`;
+		if (status === 'Paused')
+			return `${baseClasses} bg-lavender/30 group-hover:bg-lavender group-hover:text-ground text-lavender border-lavender`;
 		return 'bg-gray-800 text-gray-300';
 	}
 </script>
 
 <!-- Page Content -->
-<div class="mx-auto w-full max-w-5xl p-8">
-	<div class="mb-8 flex items-end justify-between">
-		<div class="flex items-center gap-4">
-			<h1 class="mb-2 text-3xl font-semibold text-milk">Reports</h1>
-			<p class="text-cream">Search and monitor batch reports</p>
-		</div>
-		<BaseButton
-			onclick={() => goto(resolve('/(app)/reports/new'))}
-			palette="matcha"
-		>
-			<AddIcon class="h-6" />
-			<span class="leading-none">New Report</span>
-		</BaseButton>
+<div class="mb-8 flex items-end justify-between">
+	<div class="flex items-center gap-4">
+		<h1 class="mb-2 text-3xl font-semibold text-milk">Reports</h1>
+		<p class="text-cream">Search and monitor batch reports</p>
 	</div>
+	<BaseButton onclick={() => goto(resolve('/(app)/reports/new'))} palette="matcha">
+		<AddIcon class="h-6" />
+		<span class="leading-none">New Report</span>
+	</BaseButton>
+</div>
 
-	<!-- Filter Controls -->
-	<div class="bg-mocha border-2 border-almond border-b-transparent flex flex-wrap items-end gap-6 rounded-t-lg p-5">
+<!-- Filter Controls -->
+<div class="max-w-5xl mx-auto border-2 border-almond rounded-lg">
+	<div
+		class="flex flex-wrap items-end gap-6 rounded-t-lg bg-mocha p-5"
+	>
 		<div class="min-w-50 flex-1">
 			<label class="text-textMuted mb-1 block text-sm font-medium" for="search"
 				>Search experiment</label
 			>
 			<div class="relative">
 				<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-				<SearchIcon class="h-6 text-hazelnut" />
+					<SearchIcon class="h-6 text-hazelnut" />
 				</div>
 				<!-- Svelte Data Binding for Search -->
 				<input
@@ -63,7 +65,7 @@
 					type="text"
 					bind:value={searchQuery}
 					placeholder="Search name, ID or Batch..."
-					class="border-espresso bg-cream text-ground placeholder-mocha block w-full rounded-md border py-2 pr-3 pl-10 leading-5 transition-colors focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"
+					class="block w-full rounded-md border border-espresso bg-cream py-2 pr-3 pl-10 leading-5 text-ground placeholder-mocha transition-colors focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"
 				/>
 			</div>
 		</div>
@@ -74,7 +76,7 @@
 			<select
 				id="status"
 				bind:value={statusFilter}
-				class="border-espresso bg-cream text-ground block w-full rounded-md border py-2 pr-10 pl-3 transition-colors focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"
+				class="block w-full rounded-md border border-espresso bg-cream py-2 pr-10 pl-3 text-ground transition-colors focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"
 			>
 				<option value="All">All</option>
 				<option value="Active">Active</option>
@@ -85,7 +87,7 @@
 	</div>
 
 	<!-- Interactive Table -->
-	<div class="overflow-hidden rounded-b-lg border-2 border-almond border-t-0">
+	<div class="overflow-hidden rounded-b-lg ">
 		<table class="min-w-full">
 			<thead class="bg-hazelnut text-almond">
 				<tr>
@@ -121,10 +123,10 @@
 					>
 				</tr>
 			</thead>
-			<tbody class="divide-almond/25 divide-y">
+			<tbody class="divide-y divide-almond/25">
 				{#each filteredReports as exp (exp.id)}
 					<tr class="group text-milk transition-colors hover:bg-almond/25">
-    					<td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+						<td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
 							{exp.id}
 							{#if exp.name}<div class="text-textMuted text-xs font-normal">{exp.name}</div>{/if}
 						</td>
@@ -142,9 +144,10 @@
 						</td>
 						<td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
 							<a
-    						href={resolve(`/(app)/reports/[id]`, { id: exp.id })}
-    						class="rounded-md p-2 text-caramel transition-colors group-hover:bg-espresso group-hover:text-almond hover:bg-almond hover:text-ground hover:underline">
-    							View
+								href={resolve(`/(app)/reports/[id]`, { id: exp.id })}
+								class="rounded-md p-2 text-caramel transition-colors group-hover:bg-espresso group-hover:text-almond hover:bg-almond hover:text-ground hover:underline"
+							>
+								View
 							</a>
 						</td>
 					</tr>
