@@ -8,28 +8,44 @@
 	import DownloadIcon from '@iconify-svelte/mdi/download';
 	import AlertIcon from '@iconify-svelte/mdi/alert';
 
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { get } from 'svelte/store';
+
 	import BaseButton from '$lib/components/interactables/BaseButton.svelte';
 	import { colors } from '$lib/colors';
+	import {
+		experimentStore,
+		setExperimentStatus,
+		updateExperiment,
+		type ReportStatus
+	} from '$lib/dummyData/experimentStore';
 
-	type ExperimentStatus = 'Active' | 'Paused' | 'Completed';
+	// The experiment shown here is whichever one matches the [id] in the URL.
+	const experiment = $derived($experimentStore.find((e) => e.id === page.params.id));
+	const status = $derived<ReportStatus>(experiment?.status ?? 'Active');
 
-	let status = $state<ExperimentStatus>('Active');
+	// Another experiment that is currently running (only one can be Active).
+	const otherActive = $derived(
+		$experimentStore.find((e) => e.status === 'Active' && e.id !== experiment?.id)
+	);
+
 	let activeTab = $state('Environmental');
 	let pauseReason = $state('');
-	let notes = $state('');
+	let notes = $state(get(experimentStore).find((e) => e.id === page.params.id)?.notes ?? '');
+	let showResumeDialog = $state(false);
 
-	const experiment = {
-		id: 'EXP-001',
-		name: 'SCG Batch 001 – Shoebox Trial',
-		batch: 'SCG-001',
-		enclosure: 'BOX-001',
-		createdBy: 'Juan Dela Cruz',
-		createdDate: 'October 6, 2026',
-		startTime: 'October 6, 2026 – 9:00 AM',
-		samplingInterval: 'Every 5 minutes',
-		rhThreshold: 75,
-		initialMass: 46
-	};
+	const rhThreshold = 75;
+	const initialMass = $derived(experiment?.initialMass ?? 0);
+	const samplingInterval = $derived(
+		experiment?.interval ? `Every ${experiment.interval} minutes` : '—'
+	);
+	const dimensions = $derived(
+		experiment?.length && experiment?.width && experiment?.height
+			? `${experiment.length} × ${experiment.width} × ${experiment.height} cm`
+			: '—'
+	);
 
 	function createTrend(base: number, variation: number) {
 		let value = base;
@@ -41,16 +57,17 @@
 
 	const humidity = createTrend(50, 0.7);
 	const temperature = createTrend(29, 0.35);
-	const mass = createTrend(46.2, 0.08);
+	const startMass = get(experimentStore).find((e) => e.id === page.params.id)?.initialMass ?? 46;
+	const mass = createTrend(startMass + 0.2, 0.08);
 	const tvoc = createTrend(61, 0.8);
 
 	const currentHumidity = Math.round(humidity.at(-1)?.y ?? 50);
 	const currentTemperature = Math.round(temperature.at(-1)?.y ?? 29);
 	const currentMass = Math.round((mass.at(-1)?.y ?? 46) * 10) / 10;
-	const massGain = Math.round((currentMass - experiment.initialMass) * 10) / 10;
+	const massGain = $derived(Math.round((currentMass - initialMass) * 10) / 10);
 	const currentTvoc = Math.round(tvoc.at(-1)?.y ?? 61);
 	const adsorptionRate = 0.015;
-	const protectionTime = Math.max(0, Math.round((experiment.rhThreshold - currentHumidity) * 1.8 * 10) / 10);
+	const protectionTime = Math.max(0, Math.round((rhThreshold - currentHumidity) * 1.8 * 10) / 10);
 
 	const timeline = [
 		{ time: '9:00 AM', event: 'Experiment started' },
@@ -68,27 +85,51 @@
 		{ time: '11:20 AM', rh: 50, temp: 28, tvoc: 61, mass: currentMass - 0.3 }
 	];
 
-	function changeStatus(nextStatus: ExperimentStatus) {
-		status = nextStatus;
+	function changeStatus(nextStatus: ReportStatus) {
+		if (!experiment) return;
+		// Resuming while another experiment is running needs confirmation first.
+		if (nextStatus === 'Active' && otherActive) {
+			showResumeDialog = true;
+			return;
+		}
+		setExperimentStatus(experiment.id, nextStatus);
 	}
 
-	function statusClass(currentStatus: ExperimentStatus) {
+	function confirmResume() {
+		if (experiment) setExperimentStatus(experiment.id, 'Active'); // pauses the other one
+		showResumeDialog = false;
+	}
+
+	function saveNotes() {
+		if (experiment) updateExperiment(experiment.id, { notes });
+	}
+
+	function statusClass(currentStatus: ReportStatus) {
 		if (currentStatus === 'Active') return 'bg-matcha text-espresso';
 		if (currentStatus === 'Paused') return 'bg-caramel text-espresso';
 		return 'bg-navy text-milk';
 	}
 </script>
 
+{#if !experiment}
+	<div class="mx-auto max-w-xl px-6 py-16 text-center text-milk">
+		<h1 class="mb-2 text-3xl font-bold">Report not found</h1>
+		<p class="mb-6 text-milk/70">No experiment with ID “{page.params.id}” exists.</p>
+		<BaseButton palette="caramel" onclick={() => goto(resolve('/(app)/reports'))}>
+			<ArrowLeftIcon class="h-5" /> Back to Reports
+		</BaseButton>
+	</div>
+{:else}
 <div class="min-h-screen bg-ground px-6 py-5 text-milk lg:px-10">
 	<div class="mx-auto max-w-7xl">
 		<!-- Header -->
 		<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
 			<div>
-				<button class="mb-3 flex items-center gap-1 text-caramel hover:text-milk" onclick={() => history.back()}>
-					<ArrowLeftIcon class="h-5" /> Back to Experiments
+				<button class="mb-3 flex items-center gap-1 text-caramel hover:text-milk" onclick={() => goto(resolve('/(app)/reports'))}>
+					<ArrowLeftIcon class="h-5" /> Back to Reports
 				</button>
 				<h1 class="text-4xl font-bold">Experiment Details</h1>
-				<p class="text-milk/70">{experiment.name} · {experiment.id}</p>
+				<p class="text-milk/70">{experiment.name ? `${experiment.name} · ` : ''}{experiment.id}</p>
 			</div>
 
 			<div class="flex flex-wrap gap-2">
@@ -97,7 +138,7 @@
 					<BaseButton palette="caramel" onclick={() => changeStatus('Paused')}>
 						<PauseIcon class="h-5" /> Pause Experiment
 					</BaseButton>
-					<BaseButton palette="matcha" onclick={() => changeStatus('Completed')}>
+					<BaseButton palette="matcha" onclick={() => changeStatus('Complete')}>
 						<CheckCircleIcon class="h-5" /> Complete Experiment
 					</BaseButton>
 				{:else if status === 'Paused'}
@@ -116,11 +157,11 @@
 			<div class="grid grid-cols-1 gap-5 text-sm sm:grid-cols-2 lg:grid-cols-4">
 				<div><p class="text-milk/60">Experiment ID</p><p class="text-lg font-semibold">{experiment.id}</p></div>
 				<div><p class="text-milk/60">Status</p><p class="text-lg font-semibold">{status}</p></div>
-				<div><p class="text-milk/60">Created By</p><p class="font-semibold">{experiment.createdBy}</p></div>
-				<div><p class="text-milk/60">Created Date</p><p class="font-semibold">{experiment.createdDate}</p></div>
-				<div><p class="text-milk/60">Start Time</p><p class="font-semibold">{experiment.startTime}</p></div>
+				<div><p class="text-milk/60">Planned Duration</p><p class="font-semibold">{experiment.duration ? `${experiment.duration} hours` : '—'}</p></div>
+				<div><p class="text-milk/60">Created Date</p><p class="font-semibold">{experiment.start}</p></div>
+				<div><p class="text-milk/60">Start Date</p><p class="font-semibold">{experiment.start}</p></div>
 				<div><p class="text-milk/60">Elapsed Time</p><p class="font-semibold">2 hours 35 minutes</p></div>
-				<div><p class="text-milk/60">Sampling Interval</p><p class="font-semibold">{experiment.samplingInterval}</p></div>
+				<div><p class="text-milk/60">Sampling Interval</p><p class="font-semibold">{samplingInterval}</p></div>
 				<div><p class="text-milk/60">Last Updated</p><p class="font-semibold">11:35 AM</p></div>
 			</div>
 		</section>
@@ -131,11 +172,12 @@
 				<h2 class="mb-4 text-2xl font-semibold text-caramel">Experimental Setup</h2>
 				<div class="grid grid-cols-2 gap-4 text-sm">
 					<div><p class="text-milk/60">SCG Batch</p><p class="font-semibold">{experiment.batch}</p></div>
-					<div><p class="text-milk/60">Enclosure ID</p><p class="font-semibold">{experiment.enclosure}</p></div>
-					<div><p class="text-milk/60">Enclosure Type</p><p class="font-semibold">Controlled shoebox</p></div>
-					<div><p class="text-milk/60">Initial SCG Mass</p><p class="font-semibold">{experiment.initialMass} g</p></div>
-					<div><p class="text-milk/60">RH Threshold</p><p class="font-semibold">{experiment.rhThreshold}%</p></div>
-					<div><p class="text-milk/60">Packaging Condition</p><p class="font-semibold">Controlled enclosure</p></div>
+					<div><p class="text-milk/60">Package Type</p><p class="font-semibold">{experiment.package}</p></div>
+					<div><p class="text-milk/60">Dimensions (L × W × H)</p><p class="font-semibold">{dimensions}</p></div>
+					<div><p class="text-milk/60">Volume</p><p class="font-semibold">{experiment.volume != null ? `${experiment.volume.toFixed(2)} L` : '—'}</p></div>
+					<div><p class="text-milk/60">Initial SCG Mass</p><p class="font-semibold">{experiment.initialMass != null ? `${experiment.initialMass} g` : '—'}</p></div>
+					<div><p class="text-milk/60">RH Threshold</p><p class="font-semibold">{rhThreshold}%</p></div>
+					<div><p class="text-milk/60">Preparation</p><p class="font-semibold">{experiment.preparation ?? '—'}</p></div>
 				</div>
 			</section>
 
@@ -146,7 +188,7 @@
 					<div class="flex justify-between rounded-md bg-ground/50 p-3"><span>SHT45 · RH/Temperature</span><span class="text-matcha">● Connected</span></div>
 					<div class="flex justify-between rounded-md bg-ground/50 p-3"><span>ENS160 · eTVOC</span><span class="text-matcha">● Connected</span></div>
 					<div class="flex justify-between rounded-md bg-ground/50 p-3"><span>HX711 + Load Cell</span><span class="text-matcha">● Connected</span></div>
-					<div class="flex justify-between rounded-md bg-ground/50 p-3"><span>ESP32 · ESP32-001</span><span class="text-matcha">● Connected</span></div>
+					<div class="flex justify-between rounded-md bg-ground/50 p-3"><span>ESP32 · {experiment.sensorNode ?? '—'}</span><span class="text-matcha">● Connected</span></div>
 				</div>
 				<p class="mt-3 text-sm text-milk/60">Communication: Local LAN · Last sensor check: 11:35 AM</p>
 			</section>
@@ -171,7 +213,7 @@
 			<section class="rounded-lg border border-caramel/70 bg-caramel/10 p-5">
 				<h2 class="mb-4 text-2xl font-semibold text-caramel">SCG Performance</h2>
 				<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-					<div><p class="text-sm text-milk/60">Initial Mass</p><p class="text-xl font-bold">{experiment.initialMass} g</p></div>
+					<div><p class="text-sm text-milk/60">Initial Mass</p><p class="text-xl font-bold">{initialMass} g</p></div>
 					<div><p class="text-sm text-milk/60">Current Mass</p><p class="text-xl font-bold">{currentMass} g</p></div>
 					<div><p class="text-sm text-milk/60">Mass Gain</p><p class="text-xl font-bold">{massGain} g</p></div>
 					<div><p class="text-sm text-milk/60">Adsorption Rate</p><p class="text-xl font-bold">{adsorptionRate} g/min</p></div>
@@ -182,7 +224,7 @@
 			<section class="rounded-lg border border-navy/70 bg-navy/10 p-5">
 				<h2 class="mb-4 text-2xl font-semibold text-navy">Prediction and Decision Support</h2>
 				<div class="grid grid-cols-2 gap-4">
-					<div><p class="text-sm text-milk/60">RH Threshold</p><p class="text-xl font-bold">{experiment.rhThreshold}%</p></div>
+					<div><p class="text-sm text-milk/60">RH Threshold</p><p class="text-xl font-bold">{rhThreshold}%</p></div>
 					<div><p class="text-sm text-milk/60">Estimated Protection Time</p><p class="text-xl font-bold">{protectionTime} hrs</p></div>
 					<div><p class="text-sm text-milk/60">Model Status</p><p class="text-xl font-bold text-matcha">Prototype</p></div>
 					<div><p class="text-sm text-milk/60">Confidence</p><p class="text-xl font-bold">Preliminary</p></div>
@@ -194,7 +236,7 @@
 		<!-- Detailed analysis -->
 		<section class="my-5 rounded-lg border border-milk/20 bg-espresso/50 p-5">
 			<div class="mb-4 flex flex-wrap gap-2">
-				{#each ['Environmental', 'SCG Performance', 'Prediction', 'Data Table'] as tab}
+				{#each ['Environmental', 'SCG Performance', 'Prediction', 'Data Table'] as tab (tab)}
 					<button class={`rounded-md px-4 py-2 text-sm font-semibold ${activeTab === tab ? 'bg-caramel text-espresso' : 'bg-ground/60 text-milk/70 hover:text-milk'}`} onclick={() => (activeTab = tab)}>{tab}</button>
 				{/each}
 			</div>
@@ -249,7 +291,38 @@
 				<input id="pause-reason" bind:value={pauseReason} class="mb-4 w-full rounded-md bg-ground p-3 text-milk outline-none ring-caramel focus:ring-2" placeholder="Example: Load-cell recalibration" />
 			{/if}
 			<label class="mb-2 block text-sm text-milk/70" for="experiment-notes">Experiment notes</label>
-			<textarea id="experiment-notes" bind:value={notes} class="min-h-24 w-full rounded-md bg-ground p-3 text-milk outline-none ring-caramel focus:ring-2" placeholder="Add observations about the enclosure, SCG, or sensors..."></textarea>
+			<textarea id="experiment-notes" bind:value={notes} onblur={saveNotes} class="min-h-24 w-full rounded-md bg-ground p-3 text-milk outline-none ring-caramel focus:ring-2" placeholder="Add observations about the enclosure, SCG, or sensors..."></textarea>
 		</section>
 	</div>
 </div>
+
+<!-- Resume conflict dialog: another experiment is already active -->
+{#if showResumeDialog && otherActive}
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+		role="presentation"
+		onclick={(e) => e.target === e.currentTarget && (showResumeDialog = false)}
+	>
+		<div
+			class="w-full max-w-md rounded-lg border border-milk/30 bg-espresso p-6 shadow-xl"
+			role="alertdialog"
+			aria-modal="true"
+			aria-labelledby="resume-title"
+			aria-describedby="resume-desc"
+		>
+			<h2 id="resume-title" class="mb-2 text-lg font-semibold text-caramel">
+				Another experiment is ongoing
+			</h2>
+			<p id="resume-desc" class="mb-6 text-sm text-milk/80">
+				<span class="font-semibold">{otherActive.id}</span> is currently active. Only one experiment can
+				be active at a time. If you continue, <span class="font-semibold">{otherActive.id}</span> will be
+				paused and <span class="font-semibold">{experiment.id}</span> will resume as the active experiment.
+			</p>
+			<div class="flex justify-end gap-3">
+				<BaseButton palette="navy" onclick={() => (showResumeDialog = false)}>Cancel</BaseButton>
+				<BaseButton palette="caramel" onclick={confirmResume}>Pause other &amp; resume</BaseButton>
+			</div>
+		</div>
+	</div>
+{/if}
+{/if}

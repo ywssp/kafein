@@ -3,54 +3,20 @@
 	import { resolve } from '$app/paths';
 
 	import BaseButton from '$lib/components/interactables/BaseButton.svelte';
-
+	import { experimentStore, type ReportStatus } from '$lib/dummyData/experimentStore';
 	import AddIcon from '@iconify-svelte/mdi/add';
 	import SearchIcon from '@iconify-svelte/mdi/search';
 
 	let searchQuery = $state('');
 	let statusFilter = $state('All');
 
-	type ReportStatus =  'Active' | 'Paused' | 'Complete';
-
-	// 2. Data
-	const allReports: {
-		id: string;
-		batch: string;
-		package: string;
-		start: string;
-		status: ReportStatus;
-	}[] = [
-		{
-			id: 'EXP-001',
-			batch: 'SCG-001',
-			package: 'Shoebox',
-			start: 'Sep 20, 2026',
-			status: 'Active'
-		},
-		{
-			id: 'EXP-002',
-			batch: 'SCG-002',
-			package: 'Pouch',
-			start: 'Sep 18, 2026',
-			status: 'Complete'
-		},
-		{
-			id: 'EXP-003',
-			batch: 'SCG-003',
-			package: 'Shoebox',
-			start: 'Sep 15, 2026',
-			status: 'Complete'
-		},
-		{ id: 'EXP-004', batch: 'SCG-004', package: 'Crate', start: 'Sep 25, 2026', status: 'Paused' },
-		{ id: 'EXP-005', batch: 'SCG-005', package: 'Pouch', start: 'Oct 01, 2026', status: 'Paused' }
-	];
-
-	// 3. Reactive filtering using $derived
 	let filteredReports = $derived(
-		allReports.filter((exp) => {
+		$experimentStore.filter((exp) => {
 			const query = searchQuery.toLowerCase();
 			const matchesSearch =
-				exp.id.toLowerCase().includes(query) || exp.batch.toLowerCase().includes(query);
+				exp.id.toLowerCase().includes(query) ||
+				exp.batch.toLowerCase().includes(query) ||
+				(exp.name ?? '').toLowerCase().includes(query);
 			const matchesStatus = statusFilter === 'All' || exp.status === statusFilter;
 			return matchesSearch && matchesStatus;
 		})
@@ -96,7 +62,7 @@
 					id="search"
 					type="text"
 					bind:value={searchQuery}
-					placeholder="Search ID or Batch..."
+					placeholder="Search name, ID or Batch..."
 					class="border-espresso bg-cream text-ground placeholder-mocha block w-full rounded-md border py-2 pr-3 pl-10 leading-5 transition-colors focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"
 				/>
 			</div>
@@ -158,7 +124,10 @@
 			<tbody class="divide-almond/25 divide-y">
 				{#each filteredReports as exp (exp.id)}
 					<tr class="group text-milk transition-colors hover:bg-almond/25">
-    					<td class="px-6 py-4 text-sm font-medium whitespace-nowrap">{exp.id}</td>
+    					<td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+							{exp.id}
+							{#if exp.name}<div class="text-textMuted text-xs font-normal">{exp.name}</div>{/if}
+						</td>
 						<td class="text-textMain px-6 py-4 text-sm whitespace-nowrap">{exp.batch}</td>
 						<td class="text-textMain px-6 py-4 text-sm whitespace-nowrap">{exp.package}</td>
 						<td class="text-textMuted px-6 py-4 text-sm whitespace-nowrap">{exp.start}</td>
