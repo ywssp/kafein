@@ -4,13 +4,21 @@
 	import CloudRefreshIcon from '@iconify-svelte/mdi/cloud-refresh';
 	import ClockIcon from '@iconify-svelte/mdi/clock';
 	import AlertIcon from '@iconify-svelte/mdi/alert';
+	import AddIcon from '@iconify-svelte/mdi/add';
+	import FileChartIcon from '@iconify-svelte/mdi/file-chart';
 
+	import { experimentStore } from '$lib/dummyData/experimentStore';
 	import BaseButton from '$lib/components/interactables/BaseButton.svelte';
 	import PageHeader from '$lib/components/text/PageHeader.svelte';
 	import DashboardGraph from '$lib/components/graphs/DashboardGraph.svelte';
 
-	function generateData() {
-		let rolling = 50;
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+
+	const experiment = $derived($experimentStore.find((e) => e.status === 'Active'));
+
+	function generateData(start = 50) {
+		let rolling = start;
 		let velocity = 0;
 
 		return d3.range(100).map((d) => {
@@ -30,16 +38,28 @@
 		return current - previous;
 	}
 
-	const humidity = generateData();
-	const temperature = generateData();
-	const tvoc = generateData();
-	const weight = generateData();
+		function elapsedSince(start: string) {
+		const t = Date.parse(start);
+		if (Number.isNaN(t)) return '—';
+		const mins = Math.max(0, Math.floor((Date.now() - t) / 60000));
+		const days = Math.floor(mins / 1440);
+		const hours = Math.floor((mins % 1440) / 60);
+		return days > 0 ? `${days} day${days > 1 ? 's' : ''} ${hours} hr` : `${hours} hr ${mins % 60} min`;
+	}
 
+
+	const humidity = generateData(50);
+	const temperature = generateData(50);
+	const tvoc = generateData(50);
+
+	/* temporary reomve of harcode for testing purposes
 	const experimentId = 'DEMO-001';
 	const experimentStatus = 'Monitoring';
 	const startedAt = 'October 6, 2026 – 9:00 AM';
 	const elapsedTime = '2 hours 35 minutes';
-	const initialMass = 46;
+	*/
+	const initialMass = $derived(experiment?.initialMass ?? 46);
+	const weight = $derived(generateData(initialMass + 0.2));
 	const currentMass = Math.round(weight[weight.length - 1].y * 10) / 10;
 	const massGain = Math.round((currentMass - initialMass) * 10) / 10;
 	const adsorptionRate = Math.max(0, Math.round(getRate(weight) * 1000) / 1000);
@@ -55,6 +75,7 @@
 		currentHumidity >= rhThreshold
 			? 'Inspect or replace the desiccant.'
 			: 'Continue monitoring the experiment.';
+			const lastUpdated = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
 	const recentReadings = [
 		{ time: '9:35 AM', humidity: 50, temperature: 29, tvoc: 62, mass: currentMass },
@@ -83,6 +104,30 @@
 		</BaseButton>
 	</PageHeader>
 
+	<!--If ever there is no active experiment-->
+		{#if !experiment}
+				<section
+			class="flex flex-col items-center gap-4 rounded-lg border border-milk/20 bg-almond p-10 text-center text-espresso"
+		>
+			<ClockIcon class="h-12 opacity-60" />
+			<h2 class="text-2xl font-semibold">No current active experiment</h2>
+			<p class="max-w-md text-sm opacity-70">
+				Go to the Reports page to activate a paused experiment, or create a new experiment to start
+				monitoring.
+			</p>
+			<div class="flex flex-wrap justify-center gap-3">
+				<BaseButton palette="navy" onclick={() => goto(resolve('/(app)/reports'))}>
+					<FileChartIcon class="h-6" />
+					Go to Reports
+				</BaseButton>
+				<BaseButton palette="matcha" onclick={() => goto(resolve('/(app)/reports/new'))}>
+					<AddIcon class="h-6" />
+					New Experiment
+				</BaseButton>
+			</div>
+		</section>
+	
+	{:else}
 	<DashboardGraph data={humidity} label="Humidity" unit="%" theme="navy" />
 	<DashboardGraph data={temperature} label="Temperature" unit="°C" theme="berry" />
 	<DashboardGraph
@@ -102,33 +147,36 @@
 				<ClockIcon class="h-6" />
 				Current Experiment
 			</h2>
-			<span class="rounded-full bg-matcha px-3 py-1 text-sm font-semibold text-milk"
-				>● {experimentStatus}</span
-			>
-		</div>
+			<span class="rounded-full bg-matcha px-3 py-1 text-sm font-semibold text-milk">● Active</span>
+			</div>
 
 		<div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-5">
-			<div>
-				<p class="opacity-60">Experiment ID</p>
-				<p class="font-semibold">{experimentId}</p>
+							<div>
+					<p class="opacity-60">Experiment ID</p>
+					<p class="font-semibold">
+						{experiment.id}{experiment.name ? ` · ${experiment.name}` : ''}
+					</p>
+				</div>
+				<div>
+					<p class="opacity-60">Started</p>
+					<p class="font-semibold">{experiment.start}</p>
+				</div>
+				<div>
+					<p class="opacity-60">Elapsed Time</p>
+					<p class="font-semibold">{elapsedSince(experiment.start)}</p>
+				</div>
+				<div>
+					<p class="opacity-60">Last Updated</p>
+					<p class="font-semibold">{lastUpdated}</p>
+				</div>
+				<div>
+					<p class="opacity-60">Sensor Status</p>
+					<p class="font-semibold text-matcha">
+						● Connected{experiment.sensorNode ? ` (${experiment.sensorNode})` : ''}
+					</p>
+				</div>
 			</div>
-			<div>
-				<p class="opacity-60">Started</p>
-				<p class="font-semibold">{startedAt}</p>
-			</div>
-			<div>
-				<p class="opacity-60">Elapsed Time</p>
-				<p class="font-semibold">{elapsedTime}</p>
-			</div>
-			<div>
-				<p class="opacity-60">Last Updated</p>
-				<p class="font-semibold">9:35 AM</p>
-			</div>
-			<div>
-				<p class="opacity-60">Sensor Status</p>
-				<p class="font-semibold text-matcha">● Connected</p>
-			</div>
-		</div>
+
 
 		<!-- Performance and decision support -->
 		<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -213,7 +261,11 @@
 	<section class="rounded-lg border border-mocha bg-almond p-4 text-espresso">
 		<div class="mb-3 flex flex-wrap items-center justify-between gap-2">
 			<h2 class="text-2xl font-semibold">Recent Sensor Readings</h2>
-			<BaseButton palette="navy" onclick={() => {}}>View Full Report</BaseButton>
+							<BaseButton
+					palette="navy"
+					onclick={() => goto(resolve(`/(app)/reports/[id]`, { id: experiment.id }))}>
+					View Full Report
+				</BaseButton>
 		</div>
 		<div class="overflow-x-auto">
 			<table class="w-full min-w-155 text-left text-sm">
@@ -237,6 +289,8 @@
 			</table>
 		</div>
 	</section>
+	{/if}
+	</div>
 
 	<!-- <div class="hidden flex-col gap-4">
 		<h1 class="mb-6 text-4xl font-bold text-ground">Color Tests</h1>
@@ -272,4 +326,3 @@
 			<BaseButton palette="slate">Slate</BaseButton>
 		</div>
 		</div> -->
-</div>
