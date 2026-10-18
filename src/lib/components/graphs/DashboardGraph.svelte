@@ -40,7 +40,7 @@
 		unit,
 		theme
 	}: {
-		data: { x: number; y: number }[];
+		data: { x: Date | number; y: number }[];
 		label: string;
 		unit: string;
 		theme: keyof typeof variantClasses
@@ -62,7 +62,7 @@
 		isExpanded = false;
 	}
 
-	function getTrend(data: { x: number; y: number }[]): Trend {
+	function getTrend(data: { x: number|Date; y: number }[]): Trend {
 		if (data.length < 2) return 'Stable';
 
 		const recent = data[data.length - 1].y;

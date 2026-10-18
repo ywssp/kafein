@@ -170,7 +170,11 @@
 			</div>
 			<div>
 				<p class="opacity-60">Status</p>
-				<p class={`w-fit mt-1 px-2 p-0.5 text-sm rounded-full font-semibold ${statusClass(status)}`}>{status}</p>
+				<p
+					class={`mt-1 w-fit rounded-full p-0.5 px-2 text-sm font-semibold ${statusClass(status)}`}
+				>
+					{status}
+				</p>
 			</div>
 			<div>
 				<p class="opacity-60">Planned Duration</p>
@@ -248,9 +252,9 @@
 				<div class="flex justify-between rounded-md bg-ground p-3">
 					<span>SHT45 · RH/Temperature</span><span class="text-matcha">● Connected</span>
 				</div>
-				<div class="flex justify-between rounded-md bg-ground p-3">
+				<!-- <div class="flex justify-between rounded-md bg-ground p-3">
 					<span>ENS160 · eTVOC</span><span class="text-matcha">● Connected</span>
-				</div>
+				</div> -->
 				<div class="flex justify-between rounded-md bg-ground p-3">
 					<span>HX711 + Load Cell</span><span class="text-matcha">● Connected</span>
 				</div>
@@ -289,13 +293,13 @@
 					<p class="ml-auto w-fit rounded-full bg-milk p-1 px-2 text-sm text-ground">→ Stable</p>
 				</span>
 			</div>
-			<div class="rounded-md border-2 border-matcha bg-matcha/75 p-4">
+			<!-- <div class="rounded-md border-2 border-matcha bg-matcha/75 p-4">
 				<p class="text-sm text-milk/80">eTVOC Index</p>
 				<span class="flex flex-row items-center">
 					<p class="text-3xl font-bold">{currentTvoc} ppb</p>
 					<p class="ml-auto w-fit rounded-full bg-milk p-1 px-2 text-sm text-ground">→ Stable</p>
 				</span>
-			</div>
+			</div> -->
 			<div class="rounded-md border-2 border-caramel bg-caramel/75 p-4">
 				<p class="text-sm text-milk/80">SCG Mass</p>
 				<span class="flex items-center">
@@ -388,12 +392,12 @@
 						><Line x="x" y="y" data={temperature} stroke={colors.milk} strokeWidth={3} /></Plot
 					>
 				</div>
-				<div class="rounded-md bg-matcha/75 p-3">
+				<!-- <div class="rounded-md bg-matcha/75 p-3">
 					<h3 class="font-semibold">Total Volatile Organic Compounds</h3>
 					<Plot height={180}
 						><Line x="x" y="y" data={tvoc} stroke={colors.matcha} strokeWidth={3} /></Plot
 					>
-				</div>
+				</div> -->
 			</div>
 		{:else if activeTab === 'SCG Performance'}
 			<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -443,7 +447,7 @@
 								<td class="p-2">{reading.time}</td>
 								<td class="p-2">{reading.rh}%</td>
 								<td class="p-2">{reading.temp}°C</td>
-								<td class="p-2">{reading.tvoc}</td>
+								<!-- <td class="p-2">{reading.tvoc}</td> -->
 								<td class="p-2">{reading.mass.toFixed(1)} g</td>
 							</tr>
 						{/each}
@@ -458,7 +462,7 @@
 		<section class="rounded-lg border border-almond/50 bg-hazelnut p-5">
 			<h2 class="mb-4 text-2xl font-semibold text-caramel">Experiment Timeline</h2>
 			<div class="space-y-3">
-				{#each timeline as item}<div class="flex gap-4 border-l-2 border-caramel pl-4">
+				{#each timeline as item (item.time)}<div class="flex gap-4 border-l-2 border-caramel pl-4">
 						<span class="w-20 shrink-0 text-sm text-milk/60">{item.time}</span><span class="text-sm"
 							>{item.event}</span
 						>
