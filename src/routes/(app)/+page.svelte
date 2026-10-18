@@ -1,5 +1,4 @@
 <script lang="ts">
-	import * as d3 from 'd3';
 
 	import CloudRefreshIcon from '@iconify-svelte/mdi/cloud-refresh';
 	import ClockIcon from '@iconify-svelte/mdi/clock';
@@ -17,19 +16,7 @@
 
 	const experiment = $derived($experimentStore.find((e) => e.status === 'Active'));
 
-	function generateData(start = 50) {
-		let rolling = start;
-		let velocity = 0;
 
-		return d3.range(100).map((d) => {
-			// Small acceleration nudge
-			velocity += (Math.random() - 0.5) * 0.2;
-			velocity *= 0.95; // Friction to keep momentum under control
-			rolling += velocity;
-
-			return { x: d, y: rolling };
-		});
-	}
 
 	function getRate(data: { x: number|Date; y: number }[]) {
 		if (data.length < 2) return 0;
@@ -78,24 +65,24 @@
 	const elapsedTime = '2 hours 35 minutes';
 	*/
 	const initialMass = $derived(experiment?.initialMass ?? 46);
-	const currentMass = Math.round(weight[weight.length - 1].y * 10) / 10;
-	const massGain = Math.round((currentMass - initialMass) * 10) / 10;
-	const adsorptionRate = Math.max(0, Math.round(getRate(weight) * 1000) / 1000);
+	const currentMass = $derived(Math.round(weight[weight.length - 1].y * 10) / 10);
+	const massGain = $derived(Math.round((currentMass - initialMass) * 10) / 10);
+	const adsorptionRate = $derived(Math.max(0, Math.round(getRate(weight) * 1000) / 1000));
 	const rhThreshold = 75;
-	const currentHumidity = Math.round(humidity[humidity.length - 1].y);
-	const estimatedProtectionTime = Math.max(
+	const currentHumidity = $derived(Math.round(humidity[humidity.length - 1].y));
+	const estimatedProtectionTime = $derived(Math.max(
 		0,
-		Math.round((rhThreshold - currentHumidity) * 1.8 * 10) / 10
+		Math.round((rhThreshold - currentHumidity) * 1.8 * 10) / 10)
 	);
-	const rhTrend = getRate(humidity) > 0.05 ? 'Increasing' : 'Stable';
-	const scgCondition = massGain > 0.5 ? 'Actively Adsorbing' : 'Monitoring';
+	const rhTrend = $derived(getRate(humidity) > 0.05 ? 'Increasing' : 'Stable');
+	const scgCondition = $derived(massGain > 0.5 ? 'Actively Adsorbing' : 'Monitoring');
 	const recommendation =
-		currentHumidity >= rhThreshold
+		$derived(currentHumidity >= rhThreshold
 			? 'Inspect or replace the desiccant.'
-			: 'Continue monitoring the experiment.';
+			: 'Continue monitoring the experiment.');
 			const lastUpdated = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
-	const recentReadings = [
+	const recentReadings = $derived([
 		{ time: '9:35 AM', humidity: 50, temperature: 29, tvoc: 62, mass: currentMass },
 		{
 			time: '9:30 AM',
@@ -111,7 +98,7 @@
 			tvoc: 59,
 			mass: Math.max(0, currentMass - 0.2)
 		}
-	];
+	]);
 </script>
 
 <div class="flex min-w-0 flex-col gap-4">

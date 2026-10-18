@@ -16,6 +16,9 @@ export const sensorData = sqliteTable('sensor_data', {
   id: text('id')
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
+  session_id: blob('session_id', {
+    mode: 'bigint'
+  }),
   timestamp_unix: blob('timestamp_unix', {
     mode: 'bigint'
   }).notNull(),

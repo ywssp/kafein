@@ -433,7 +433,7 @@
 			</div>
 		{:else}
 			<div class="overflow-x-auto">
-				<table class="w-full min-w-[650px] text-left text-sm">
+				<table class="w-full min-w-162.5 text-left text-sm">
 					<thead class="border-b border-milk/20 text-milk/60"
 						><tr
 							><th class="p-2">Time</th><th class="p-2">RH</th><th class="p-2">Temperature</th><th

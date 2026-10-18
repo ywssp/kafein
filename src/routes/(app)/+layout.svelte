@@ -12,6 +12,7 @@
 	import FileReportIcon from '@iconify-svelte/mdi/file-report';
 	import HelpIcon from '@iconify-svelte/mdi/help';
 	import UsersIcon from '@iconify-svelte/mdi/users';
+	import ToolsIcon from '@iconify-svelte/mdi/tools';
 
 	// Minimize Bar Icons
 	import ArrowCollapseLeftIcon from '@iconify-svelte/mdi/arrow-collapse-left';
@@ -66,6 +67,9 @@
 			>
 			<NavigationTab href={resolve("/(app)/users")} label="Users" {navCollapsed}
 				><UsersIcon class="h-8 text-almond" /></NavigationTab
+			>
+			<NavigationTab href={resolve("/(app)/tools")} label="Tools" {navCollapsed}
+				><ToolsIcon class="h-8 text-almond" /></NavigationTab
 			>
 			<!-- <NavigationTab href={resolve("/(app)/experiments")} label="Experiments" {navCollapsed}
 				><FileReportIcon class="h-8 text-almond" /></NavigationTab
