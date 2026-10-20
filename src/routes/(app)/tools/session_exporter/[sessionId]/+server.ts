@@ -1,21 +1,16 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db/index';
 import { sensorData } from '$lib/server/db/schema';
-import { eq, isNull } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 export const GET: RequestHandler = async ({ params }) => {
 	const { sessionId } = params;
-
-	const session_matcher = sessionId === '0' ? null : BigInt(sessionId);
 
 	// Fetch all records for the requested session
 	const records = await db
 		.select()
 		.from(sensorData)
-		.where(
-			session_matcher === null
-				? isNull(sensorData.session_id)
-				: eq(sensorData.session_id, session_matcher)
+		.where(eq(sensorData.session_id, sessionId)
 		);
 
 	if (records.length === 0) {

@@ -6,14 +6,13 @@
 
 	const sessions = $derived(
 		data.sessions.map((s) => ({
-			session_id: s.session_id,
+			...s,
 			start_date: new Date(s.startTime * 1000),
-			end_date: new Date(s.endTime * 1000),
-			recordCount: s.recordCount
+			end_date: new Date(s.endTime * 1000)
 		}))
 	);
 
-	let selectedSession = $state(null);
+	let selectedSession = $state("");
 </script>
 
 <PageHeader pageTitle="Tools">

@@ -21,7 +21,6 @@ export const load: PageServerLoad = async () => {
 		...session,
 		startTime: Number(session.startTime),
 		endTime: Number(session.endTime),
-		session_id: session.session_id ?? BigInt(0)
 	}));
 
 	return { sessions: serializedSessions };

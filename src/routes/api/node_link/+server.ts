@@ -5,7 +5,7 @@ import { db } from '$lib/server/db/index';
 import { sensorData } from '$lib/server/db/schema';
 
 interface TelemetryPayload {
-  session: number;
+  session: string;
   timestamp: number;
   weight: number;
   weight_rate: number;
@@ -22,7 +22,7 @@ export const POST: RequestHandler = async ({ request }) => {
     console.log('Received sensor telemetry:', data);
 
     await db.insert(sensorData).values({ 
-      session_id: BigInt(data.session),
+      session_id: data.session,
       timestamp_unix: BigInt(data.timestamp),
       temperature_c: data.temp,
       rel_humidity: data.humidity,

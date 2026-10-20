@@ -1,5 +1,4 @@
 <script lang="ts">
-
 	import CloudRefreshIcon from '@iconify-svelte/mdi/cloud-refresh';
 	import ClockIcon from '@iconify-svelte/mdi/clock';
 	import AlertIcon from '@iconify-svelte/mdi/alert';
@@ -15,8 +14,6 @@
 	import { resolve } from '$app/paths';
 
 	const experiment = $derived($experimentStore.find((e) => e.status === 'Active'));
-
-
 
 	function getRate(data: { x: number|Date; y: number }[]) {
 		if (data.length < 2) return 0;
@@ -37,7 +34,7 @@
 	const { data } = $props();
 	const records = $derived(data.records);
 
-	const humidity = $derived(
+	const relative_humidity = $derived(
     records.map((record) => ({
       x: new Date(record.timestamp_unix * 1000), // Fixed: seconds to ms
       y: record.rel_humidity
@@ -58,6 +55,27 @@
     }))
   );
 
+  const weight_rate = $derived(
+    records.map((record) => ({
+      x: new Date(record.timestamp_unix * 1000), // Fixed: seconds to ms
+      y: record.weight_rate_min
+    }))
+  );
+
+  const absolute_humidity = $derived(
+    records.map((record) => ({
+      x: new Date(record.timestamp_unix * 1000), // Fixed: seconds to ms
+      y: record.abs_humidity
+    }))
+  );
+
+  const absolute_humidity_rate = $derived(
+    records.map((record) => ({
+      x: new Date(record.timestamp_unix * 1000), // Fixed: seconds to ms
+      y: record.abs_humidity_rate_min
+    }))
+  );
+
 	/* temporary reomve of harcode for testing purposes
 	const experimentId = 'DEMO-001';
 	const experimentStatus = 'Monitoring';
@@ -69,12 +87,12 @@
 	const massGain = $derived(Math.round((currentMass - initialMass) * 10) / 10);
 	const adsorptionRate = $derived(Math.max(0, Math.round(getRate(weight) * 1000) / 1000));
 	const rhThreshold = 75;
-	const currentHumidity = $derived(Math.round(humidity[humidity.length - 1].y));
+	const currentHumidity = $derived(Math.round(relative_humidity[relative_humidity.length - 1].y));
 	const estimatedProtectionTime = $derived(Math.max(
 		0,
 		Math.round((rhThreshold - currentHumidity) * 1.8 * 10) / 10)
 	);
-	const rhTrend = $derived(getRate(humidity) > 0.05 ? 'Increasing' : 'Stable');
+	const rhTrend = $derived(getRate(relative_humidity) > 0.05 ? 'Increasing' : 'Stable');
 	const scgCondition = $derived(massGain > 0.5 ? 'Actively Adsorbing' : 'Monitoring');
 	const recommendation =
 		$derived(currentHumidity >= rhThreshold
@@ -130,15 +148,15 @@
 			</div>
 		</section>
 	{:else}
-		<DashboardGraph data={humidity} label="Humidity" unit="%" theme="navy" />
+		<DashboardGraph data={relative_humidity} label="Humidity" unit="%" theme="navy" />
 		<DashboardGraph data={temperature} label="Temperature" unit="°C" theme="berry" />
-		<!-- <DashboardGraph
-		data={tvoc}
-		label="Total Volatile Organic Compounds"
-		unit=" µg/m³"
-		theme="matcha"
-	/> -->
 		<DashboardGraph data={weight} label="Spent Coffee Grounds Weight" unit=" g" theme="caramel" />
+		
+		<DashboardGraph data={weight_rate} label="Weight Rate" unit=" g/min" theme="caramel" />
+		
+		<DashboardGraph data={absolute_humidity} label="Absolute Humidity" unit=" g/m^3" theme="matcha" />
+		
+		<DashboardGraph data={absolute_humidity_rate} label="AH Rate" unit=" g/m^3/min" theme="matcha" />
 
 		<hr class="my-2 border-t-2 border-solid border-almond" />
 

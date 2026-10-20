@@ -65,8 +65,8 @@
 	function getTrend(data: { x: number|Date; y: number }[]): Trend {
 		if (data.length < 2) return 'Stable';
 
-		const recent = data[data.length - 1].y;
-		const previous = data[data.length - 6]?.y ?? data[data.length - 2].y;
+		const recent = data[0].y;
+		const previous = data[5]?.y ?? data[1].y;
 		const difference = recent - previous;
 
 		if (difference > 0.5) return 'Rising';
@@ -84,7 +84,7 @@
 	const dataValues = $derived(data.map((point) => point.y));
 	const dataMin = $derived(Math.min(...dataValues));
 	const dataMax = $derived(Math.max(...dataValues));
-	const dataFinalPoint = $derived(dataValues[dataValues.length - 1]);
+	const dataFinalPoint = $derived(dataValues[0]);
 	const dataTrend = $derived(getTrend(data));
 </script>
 
@@ -101,11 +101,11 @@
 			<div class="flex flex-col justify-between text-xs">
 				<div>
 					<ArrowCollapseUpIcon class="inline-block h-3" /> Max:
-					{Math.round(dataMax)}{unit}
+					{dataMax}{unit}
 				</div>
 				<div>
 					<ArrowCollapseDownIcon class="inline-block h-3" /> Min:
-					{Math.round(dataMin)}{unit}
+					{dataMin}{unit}
 				</div>
 			</div>
 			<div
@@ -128,7 +128,7 @@
 			</div>
 
 			<h2 class="self-center text-xl font-semibold">
-				{Math.round(dataFinalPoint)}{unit}
+				{dataFinalPoint}{unit}
 			</h2>
 		</div>
 	</div>
