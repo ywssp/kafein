@@ -40,7 +40,7 @@
       y: record.rel_humidity
     }))
   );
-	
+
   const temperature = $derived(
     records.map((record) => ({
       x: new Date(record.timestamp_unix * 1000), // Fixed: seconds to ms
@@ -83,11 +83,11 @@
 	const elapsedTime = '2 hours 35 minutes';
 	*/
 	const initialMass = $derived(experiment?.initialMass ?? 46);
-	const currentMass = $derived(Math.round(weight[weight.length - 1].y * 10) / 10);
+	const currentMass = $derived(Math.round(0 * 10) / 10);
 	const massGain = $derived(Math.round((currentMass - initialMass) * 10) / 10);
 	const adsorptionRate = $derived(Math.max(0, Math.round(getRate(weight) * 1000) / 1000));
 	const rhThreshold = 75;
-	const currentHumidity = $derived(Math.round(relative_humidity[relative_humidity.length - 1].y));
+	const currentHumidity = $derived(Math.round(0));
 	const estimatedProtectionTime = $derived(Math.max(
 		0,
 		Math.round((rhThreshold - currentHumidity) * 1.8 * 10) / 10)
@@ -151,11 +151,11 @@
 		<DashboardGraph data={relative_humidity} label="Humidity" unit="%" theme="navy" />
 		<DashboardGraph data={temperature} label="Temperature" unit="°C" theme="berry" />
 		<DashboardGraph data={weight} label="Spent Coffee Grounds Weight" unit=" g" theme="caramel" />
-		
+
 		<DashboardGraph data={weight_rate} label="Weight Rate" unit=" g/min" theme="caramel" />
-		
+
 		<DashboardGraph data={absolute_humidity} label="Absolute Humidity" unit=" g/m^3" theme="matcha" />
-		
+
 		<DashboardGraph data={absolute_humidity_rate} label="AH Rate" unit=" g/m^3/min" theme="matcha" />
 
 		<hr class="my-2 border-t-2 border-solid border-almond" />
