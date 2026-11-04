@@ -9,7 +9,8 @@
 
 	// Tab Icons
 	import HomeIcon from '@iconify-svelte/mdi/home';
-	import FileReportIcon from '@iconify-svelte/mdi/file-report';
+	import SparklesIcon from '@iconify-svelte/mdi/sparkles';
+	import HistoryIcon from '@iconify-svelte/mdi/history';
 	import HelpIcon from '@iconify-svelte/mdi/help';
 	import UsersIcon from '@iconify-svelte/mdi/users';
 	import ToolsIcon from '@iconify-svelte/mdi/tools';
@@ -59,18 +60,21 @@
 			<NavigationTab href={resolve("/(app)")} label="Home" {navCollapsed}
 				><HomeIcon class="h-8 text-almond" /></NavigationTab
 			>
-			<NavigationTab href={resolve("/(app)/reports")} label="Reports" {navCollapsed}
-				><FileReportIcon class="h-8 text-almond" /></NavigationTab
+			<NavigationTab href={resolve("/(app)/recommend")} label="Recommend" {navCollapsed}
+				><SparklesIcon class="h-8 text-almond" /></NavigationTab
+			>
+			<NavigationTab href={resolve("/(app)/history")} label="History" {navCollapsed}
+				><HistoryIcon class="h-8 text-almond" /></NavigationTab
 			>
 			<NavigationTab href={resolve("/(app)/help")} label="Help" {navCollapsed}
 				><HelpIcon class="h-8 text-almond" /></NavigationTab
 			>
-			<NavigationTab href={resolve("/(app)/users")} label="Users" {navCollapsed}
+			<!-- <NavigationTab href={resolve("/(app)/users")} label="Users" {navCollapsed}
 				><UsersIcon class="h-8 text-almond" /></NavigationTab
 			>
 			<NavigationTab href={resolve("/(app)/tools")} label="Tools" {navCollapsed}
 				><ToolsIcon class="h-8 text-almond" /></NavigationTab
-			>
+			> -->
 			<!-- <NavigationTab href={resolve("/(app)/experiments")} label="Experiments" {navCollapsed}
 				><FileReportIcon class="h-8 text-almond" /></NavigationTab
 			> -->

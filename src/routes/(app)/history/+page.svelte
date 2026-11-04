@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 
 	import BaseButton from '$lib/components/interactables/BaseButton.svelte';
+	import PageHeader from '$lib/components/text/PageHeader.svelte';
 	import { experimentStore, type ReportStatus } from '$lib/dummyData/experimentStore';
 	import AddIcon from '@iconify-svelte/mdi/add';
 	import SearchIcon from '@iconify-svelte/mdi/search';
@@ -35,25 +36,19 @@
 </script>
 
 <!-- Page Content -->
-<div class="mb-8 flex items-end justify-between">
-	<div class="flex items-center gap-4">
-		<h1 class="mb-2 text-3xl font-semibold text-milk">Reports</h1>
-		<p class="text-cream">Search and monitor batch reports</p>
-	</div>
-	<BaseButton onclick={() => goto(resolve('/(app)/reports/new'))} palette="matcha">
-		<AddIcon class="h-6" />
-		<span class="leading-none">New Report</span>
-	</BaseButton>
-</div>
+<PageHeader pageTitle="History">
+  <div class="text-cream mr-auto ml-4 h-full">Browse and search previous recommendations</div>
+</PageHeader>
+
 
 <!-- Filter Controls -->
-<div class="max-w-5xl mx-auto border-2 border-almond rounded-lg">
+<div class="mt-8 mx-auto border-2 border-almond rounded-lg">
 	<div
 		class="flex flex-wrap items-end gap-6 rounded-t-lg bg-mocha p-5"
 	>
 		<div class="min-w-50 flex-1">
 			<label class="text-textMuted mb-1 block text-sm font-medium" for="search"
-				>Search experiment</label
+				>Search Recommendations</label
 			>
 			<div class="relative">
 				<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -64,7 +59,7 @@
 					id="search"
 					type="text"
 					bind:value={searchQuery}
-					placeholder="Search name, ID or Batch..."
+					placeholder="Search date"
 					class="block w-full rounded-md border border-espresso bg-cream py-2 pr-3 pl-10 leading-5 text-ground placeholder-mocha transition-colors focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"
 				/>
 			</div>
