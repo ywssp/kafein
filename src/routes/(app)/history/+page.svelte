@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-
 	import BaseButton from '$lib/components/interactables/BaseButton.svelte';
+
 	import PageHeader from '$lib/components/text/PageHeader.svelte';
-	import { experimentStore, type ReportStatus } from '$lib/dummyData/experimentStore';
-	import AddIcon from '@iconify-svelte/mdi/add';
+	import { experimentStore } from '$lib/dummyData/experimentStore';
 	import SearchIcon from '@iconify-svelte/mdi/search';
 
 	let searchQuery = $state('');
@@ -22,30 +21,17 @@
 			return matchesSearch && matchesStatus;
 		})
 	);
-
-	function getStatusColor(status: ReportStatus) {
-		const baseClasses = 'border-2 transition-colors';
-		if (status === 'Active')
-			return `${baseClasses} bg-caramel/30 group-hover:bg-caramel group-hover:text-ground text-caramel border-caramel`;
-		if (status === 'Complete')
-			return `${baseClasses} bg-matcha/30 group-hover:bg-matcha group-hover:text-ground text-matcha border-matcha`;
-		if (status === 'Paused')
-			return `${baseClasses} bg-lavender/30 group-hover:bg-lavender group-hover:text-ground text-lavender border-lavender`;
-		return 'bg-gray-800 text-gray-300';
-	}
 </script>
 
 <!-- Page Content -->
-<PageHeader pageTitle="History">
-  <div class="text-cream mr-auto ml-4 h-full">Browse and search previous recommendations</div>
-</PageHeader>
-
+<PageHeader
+	pageTitle="History"
+	description="Browse and search previous recommendations"
+></PageHeader>
 
 <!-- Filter Controls -->
-<div class="mt-8 mx-auto border-2 border-almond rounded-lg">
-	<div
-		class="flex flex-wrap items-end gap-6 rounded-t-lg bg-mocha p-5"
-	>
+<div class="mx-auto mt-8 rounded-lg border-2 border-almond">
+	<div class="flex flex-wrap items-end gap-6 rounded-t-lg bg-mocha p-5">
 		<div class="min-w-50 flex-1">
 			<label class="text-textMuted mb-1 block text-sm font-medium" for="search"
 				>Search Recommendations</label
@@ -59,98 +45,65 @@
 					id="search"
 					type="text"
 					bind:value={searchQuery}
-					placeholder="Search date"
+					placeholder="Search Notes or ID"
 					class="block w-full rounded-md border border-espresso bg-cream py-2 pr-3 pl-10 leading-5 text-ground placeholder-mocha transition-colors focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"
 				/>
 			</div>
 		</div>
-
-		<div class="w-48">
-			<label class="text-textMuted mb-1 block text-sm font-medium" for="status">Status</label>
-			<!-- Svelte Data Binding for Select -->
-			<select
-				id="status"
-				bind:value={statusFilter}
-				class="block w-full rounded-md border border-espresso bg-cream py-2 pr-10 pl-3 text-ground transition-colors focus:border-caramel focus:ring-1 focus:ring-caramel focus:outline-none sm:text-sm"
-			>
-				<option value="All">All</option>
-				<option value="Active">Active</option>
-				<option value="Paused">Paused</option>
-				<option value="Complete">Complete</option>
-			</select>
-		</div>
 	</div>
 
 	<!-- Interactive Table -->
-	<div class="overflow-hidden rounded-b-lg ">
+	<div class="overflow-hidden rounded-b-lg">
 		<table class="min-w-full">
 			<thead class="bg-hazelnut text-almond">
 				<tr>
-					<th
-						scope="col"
-						class="text-textMuted px-6 py-4 text-left text-xs font-medium tracking-wider uppercase"
+					<th scope="col" class="px-6 py-4 text-left text-xs font-medium tracking-wider uppercase"
 						>ID</th
 					>
-					<th
-						scope="col"
-						class="text-textMuted px-6 py-4 text-left text-xs font-medium tracking-wider uppercase"
+					<th scope="col" class=" px-6 py-4 text-left text-xs font-medium tracking-wider uppercase"
 						>SCG Batch</th
 					>
-					<th
-						scope="col"
-						class="text-textMuted px-6 py-4 text-left text-xs font-medium tracking-wider uppercase"
-						>Package</th
+					<th scope="col" class="px-6 py-4 text-left text-xs font-medium tracking-wider uppercase"
+						>Note</th
 					>
-					<th
-						scope="col"
-						class="text-textMuted px-6 py-4 text-left text-xs font-medium tracking-wider uppercase"
-						>Start Date</th
+					<th scope="col" class="px-6 py-4 text-left text-xs font-medium tracking-wider uppercase"
+						>Created At</th
 					>
-					<th
-						scope="col"
-						class="text-textMuted px-6 py-4 text-left text-xs font-medium tracking-wider uppercase"
-						>Status</th
-					>
-					<th
-						scope="col"
-						class="text-textMuted px-6 py-4 text-left text-xs font-medium tracking-wider uppercase"
+					<th scope="col" class="px-6 py-4 text-left text-xs font-medium tracking-wider uppercase"
 						>Action</th
 					>
 				</tr>
 			</thead>
 			<tbody class="divide-y divide-almond/25">
-				{#each filteredReports as exp (exp.id)}
-					<tr class="group text-milk transition-colors hover:bg-almond/25">
+				{#each filteredReports as recommendation (recommendation.id)}
+					<tr
+						class="group text-milk transition-colors hover:bg-almond/25"
+						onclick={() => goto(resolve(`/(app)/history/[id]`, { id: recommendation.id }))}
+					>
 						<td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
-							{exp.id}
-							{#if exp.name}<div class="text-textMuted text-xs font-normal">{exp.name}</div>{/if}
+							{recommendation.id}
 						</td>
-						<td class="text-textMain px-6 py-4 text-sm whitespace-nowrap">{exp.batch}</td>
-						<td class="text-textMain px-6 py-4 text-sm whitespace-nowrap">{exp.package}</td>
-						<td class="text-textMuted px-6 py-4 text-sm whitespace-nowrap">{exp.start}</td>
-						<td class="px-6 py-4 whitespace-nowrap">
-							<span
-								class="inline-flex rounded-full px-2 py-0.5 text-xs leading-5 font-semibold {getStatusColor(
-									exp.status
-								)}"
-							>
-								{exp.status}
-							</span>
-						</td>
+						<td class=" px-6 py-4 text-sm whitespace-nowrap">{recommendation.batch}</td>
+						<td
+							class={[' px-6 py-4 text-sm whitespace-nowrap', recommendation.name || 'opacity-50']}
+							>{recommendation.name ?? 'No Note'}</td
+						>
+						<td class="px-6 py-4 text-sm whitespace-nowrap text-cream">{recommendation.start}</td>
 						<td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
-							<a
-								href={resolve(`/(app)/reports/[id]`, { id: exp.id })}
-								class="rounded-md p-2 text-caramel transition-colors group-hover:bg-espresso group-hover:text-almond hover:bg-almond hover:text-ground hover:underline"
+							<BaseButton
+								palette="berry"
+								onclick={(e) => {
+									e.stopPropagation();
+									confirm('Do you want to delete this recommendation?');
+								}}>Delete</BaseButton
 							>
-								View
-							</a>
 						</td>
 					</tr>
 				{/each}
 				{#if filteredReports.length === 0}
 					<tr>
 						<td colspan="6" class="px-6 py-8 text-center text-almond italic">
-							No reports match your filters.
+							No records match your filters.
 						</td>
 					</tr>
 				{/if}

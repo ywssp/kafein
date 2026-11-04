@@ -28,8 +28,7 @@
 </script>
 
 <!-- Page Content -->
-<PageHeader pageTitle="Recommend">
-	<div class="mr-auto ml-4 h-full text-cream">Get a recommendation for reusing your SCG</div>
+<PageHeader pageTitle="Recommend" description="Get a recommendation for reusing your SCG">
 </PageHeader>
 
 <form class="overflow-hidden">
