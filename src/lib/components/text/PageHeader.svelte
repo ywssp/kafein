@@ -5,10 +5,10 @@
 		pageTitle,
 		description: description = '',
 		children
-	}: { pageTitle: string; description: string; children?: Snippet } = $props();
+	}: { pageTitle: string; description?: string; children?: Snippet } = $props();
 </script>
 
-<header class="flex items-center justify-between">
+<header class="flex items-center justify-between mb-4">
 	<div class="flex flex-row items-center gap-2">
 		<h1 class="text-4xl font-semibold">{pageTitle}</h1>
 		{#if description.trim().length > 0}

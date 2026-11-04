@@ -4,7 +4,6 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { get } from 'svelte/store';
 
 	import BaseButton from '$lib/components/interactables/BaseButton.svelte';
 </script>
