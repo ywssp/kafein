@@ -46,7 +46,7 @@
 
 	// Consolidated common class configurations
 	let baseInputClasses = $derived([
-		'coffee-input w-full rounded-lg border-2 font-serif text-[1.05rem] p-3 outline-none transition-all duration-200',
+		'coffee-input w-full rounded-lg border-2 text-[1.05rem] p-3 outline-none transition-all duration-200',
 		'placeholder:text-cream/40',
 		disabled
 			? 'border-[#5c3d2e]/50 bg-[#3d2519] text-cream/40 cursor-not-allowed'
@@ -78,7 +78,7 @@
 		{#if pdfMode}
 			<div
 				class={[
-					'flex min-h-[3.25rem] w-full items-center rounded-lg border-2 border-[#6e4833] p-3 font-serif text-[1.05rem] text-cream',
+					'flex min-h-[3.25rem] w-full items-center rounded-lg border-2 border-[#6e4833] p-3 text-[1.05rem] text-cream',
 					bgClass,
 					inputClass
 				]}
