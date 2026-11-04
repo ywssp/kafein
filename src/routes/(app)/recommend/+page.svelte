@@ -2,7 +2,6 @@
 	import PageHeader from '$lib/components/text/PageHeader.svelte';
 	import InputField from '$lib/components/inputs/FormInput.svelte';
 	import BasicButton from '$lib/components/inputs/BasicButton.svelte';
-	import BaseButton from '$lib/components/interactables/BaseButton.svelte';
 
 	type Group = 'contamination' | 'materials' | 'equipment';
 
@@ -84,7 +83,7 @@
 				<span class="text-danger ml-0.5" aria-hidden="true">*</span>
 			{/if}
 		</h2>
-		<fieldset class="coffee-fieldset rounded-lg p-4">
+		<fieldset class="coffee-fieldset rounded-lg p-4 font-serif">
 			<legend class="sr-only">{label}</legend>
 			<div class="flex flex-wrap gap-x-8 gap-y-2.5">
 				{#each options as option (option)}
@@ -104,10 +103,8 @@
 {/snippet}
 
 <!-- Page Content -->
-<PageHeader
-	pageTitle="Recommend"
-	description="Get a recommendation for reusing your SCG"
-></PageHeader>
+<PageHeader pageTitle="Recommend" description="Get a recommendation for reusing your SCG">
+</PageHeader>
 
 <form onsubmit={handleSubmit} class="coffee-form mt-16 px-12 pb-12">
 	<div class="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-2">
@@ -182,16 +179,15 @@
 			placeholder="Enter amount (g)"
 			bind:value={form.scgAmount}
 			onkeydown={(e) => {
-				if (['e', 'E', '+', '-'].includes(e.key)) {
-					e.preventDefault();
-				}
-			}}
-			oninput={(e) => {
-				const target = e.currentTarget as HTMLInputElement;
-				target.value = target.value.replace(/[^0-9.]/g, '');
-				form.scgAmount = target.value;
-			}}
-		/>
+				if (['e', 'E', '+', '-'].includes(e.key)) {e.preventDefault();
+			}
+		}}
+	oninput={(e) => {
+		const target = e.currentTarget as HTMLInputElement;
+		target.value = target.value.replace(/[^0-9.]/g, '');
+		form.scgAmount = target.value;
+	}}
+/>
 		<InputField
 			id="storage_duration"
 			label="Storage Duration"
@@ -246,10 +242,8 @@
 	</div>
 
 	<div class="mt-12 flex justify-between">
-		<BaseButton onclick={resetForm} type="reset" palette="berry">Reset</BaseButton>
-		<BaseButton type="submit" disabled={!isFormValid} palette="caramel"
-			>Get Recommendation</BaseButton
-		>
+		<BasicButton onclick={resetForm} variant="danger">Reset</BasicButton>
+		<BasicButton type="submit" disabled={!isFormValid}>Get Recommendation</BasicButton>
 	</div>
 </form>
 
@@ -261,9 +255,7 @@
 	.coffee-fieldset {
 		background-color: #4a2e20;
 		border: 2px solid #6e4833;
-		transition:
-			border-color 0.2s ease,
-			box-shadow 0.2s ease;
+		transition: border-color 0.2s ease, box-shadow 0.2s ease;
 	}
 
 	.coffee-fieldset:hover {
