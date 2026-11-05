@@ -19,13 +19,13 @@
 	interface RecommendationResult {
 		id: string;
 		title: string;
-		score: number; // 0 - 100% from Sugeno Fuzzy Logic
+		score: number; 
 		level: SuitabilityLevel;
 		predictionLabel: string; // What Linear Regression predicts (Y)
 		predictionValue: string; // Calculated Y value
 		regressionFormula: string; // The Y = b0 + b1*X1 formula
 		regressionInputs: string; // The X values plugged into the formula
-		sugenoWeights: string; // Sugeno rule firing weights (w_Low, w_Mod, w_High)
+		firingStrengths: string; // Sugeno rule firing weights (w_Low, w_Mod, w_High)
 		recipe: string;
 		supporting: string[];
 		limiting: string[];
@@ -168,20 +168,45 @@
 		saved = false;
 	}
 
-	// TAKAGI-SUGENO FUZZY LOGIC HELPER FUNCTIONS
+	// MAMDANI FUZZY LOGIC HELPER FUNCTIONS
 
-	function triangleMF(x: number, a: number, b: number, c: number): number {
-		if (x <= a || x >= c) return 0;
-		if (x === b) return 1;
-		return x < b ? (x - a) / (b - a) : (c - x) / (c - b);
+function triangleMF(x: number, a: number, b: number, c: number): number {
+	if (x <= a || x >= c) return 0;
+	if (x === b) return 1;
+	return x < b ? (x - a) / (b - a) : (c - x) / (c - b);
+}
+
+// Trapezoid: rises a→b, flat b→c, falls c→d. Used for the output sets.
+function trapezoidMF(x: number, a: number, b: number, c: number, d: number): number {
+	if (x < a || x > d) return 0;
+	if (x >= b && x <= c) return 1;
+	return x < b ? (x - a) / (b - a) : (d - x) / (d - c);
+}
+
+// Output membership functions for suitability score Z (0-100)
+const OUTPUT_MF = {
+	low: [0, 0, 15, 45],
+	moderate: [25, 55, 55, 85],
+	high: [65, 85, 100, 100]
+} as const;
+
+// Mamdani inference: clip each output set by its rule firing strength (min),
+// aggregate with max, then defuzzify using the centroid: Z = Σ z·μ(z) / Σ μ(z)
+function computeMamdaniScore(wLow: number, wMod: number, wHigh: number): number {
+	if (wLow + wMod + wHigh === 0) return 50;
+	let num = 0;
+	let den = 0;
+	for (let z = 0; z <= 100; z += 0.5) {
+		const mu = Math.max(
+			Math.min(wLow, trapezoidMF(z, ...OUTPUT_MF.low)),
+			Math.min(wMod, trapezoidMF(z, ...OUTPUT_MF.moderate)),
+			Math.min(wHigh, trapezoidMF(z, ...OUTPUT_MF.high))
+		);
+		num += z * mu;
+		den += mu;
 	}
-	//Sugeno Fuzzy Logic score
-	function computeSugenoScore(wLow: number, wMod: number, wHigh: number): number {
-		const sumWeights = wLow + wMod + wHigh;
-		if (sumWeights === 0) return 50;
-		const z = (wLow * 20 + wMod * 55 + wHigh * 95) / sumWeights;
-		return Math.round(z);
-	}
+	return den === 0 ? 50 : Math.round(num / den);
+}
 
 	function getSuitabilityLevel(score: number): SuitabilityLevel {
 		if (score >= 75) return 'High';
@@ -247,7 +272,7 @@
 			);
 			const wLow = Math.max(hasForeign ? 0.9 : 0, Math.min(muGILow, 1 - (hasSoilMix ? 0.7 : 0)));
 
-			const fuzzyScore = computeSugenoScore(wLow, wMod, wHigh);
+			const fuzzyScore = computeMamdaniScore(wLow, wMod, wHigh);
 
 			const supporting: string[] = [];
 			const limiting: string[] = [];
@@ -279,7 +304,7 @@
 				predictionValue: `${predictedGI}% Plant Growth Viability`,
 				regressionFormula: 'Ŷ = 32.5 + 58.0(X₁) - 0.12(X₂)',
 				regressionInputs: `X₁ (Compost) = ${compostFactor}, X₂ (Moisture) = ${estMoisture}%`,
-				sugenoWeights: `w_Low=${wLow.toFixed(2)}, w_Mod=${wMod.toFixed(2)}, w_High=${wHigh.toFixed(2)}`,
+				firingStrengths: `w_Low=${wLow.toFixed(2)}, w_Mod=${wMod.toFixed(2)}, w_High=${wHigh.toFixed(2)}`,
 				recipe: isComposted
 					? `Mix your ${amount}g of composted SCG at a 10–20% ratio with ${amount * 4}g of topsoil or peat moss.`
 					: `Do not apply directly to sensitive crops. Compost your ${amount}g SCG with ${amount * 3}g of dry leaves/sawdust and ${amount}g of manure first.`,
@@ -314,7 +339,7 @@
 			);
 			const wLow = Math.max(muCalLow, Math.min(muMoistureWet, hasSawdust ? 0.4 : 1.0));
 
-			const fuzzyScore = computeSugenoScore(wLow, wMod, wHigh);
+			const fuzzyScore = computeMamdaniScore(wLow, wMod, wHigh);
 
 			const supporting: string[] = [];
 			const limiting: string[] = [];
@@ -348,7 +373,7 @@
 				predictionValue: `${predictedCalorific} MJ/kg`,
 				regressionFormula: 'Ŷ = 22.4 - 0.14(X₁) + 1.2(X₂)',
 				regressionInputs: `X₁ (Moisture) = ${estMoisture}%, X₂ (Sawdust) = ${hasSawdust ? 1 : 0}`,
-				sugenoWeights: `w_Low=${wLow.toFixed(2)}, w_Mod=${wMod.toFixed(2)}, w_High=${wHigh.toFixed(2)}`,
+				firingStrengths: `w_Low=${wLow.toFixed(2)}, w_Mod=${wMod.toFixed(2)}, w_High=${wHigh.toFixed(2)}`,
 				recipe: `Combine your ${amount}g of dried SCG (30%) with ${(amount * 2.33).toFixed(0)}g of Sawdust (70%) before pressing.`,
 				supporting,
 				limiting,
@@ -380,7 +405,7 @@
 			const wMod = hasMold ? 0 : Math.max(muGrowthMod, Math.min(muGrowthHigh, 1 - muFresh));
 			const wLow = hasMold || !isClean ? 1.0 : Math.max(muGrowthLow, 1 - muFresh);
 
-			const fuzzyScore = computeSugenoScore(wLow, wMod, wHigh);
+			const fuzzyScore = computeMamdaniScore(wLow, wMod, wHigh);
 
 			const supporting: string[] = [];
 			const limiting: string[] = [];
@@ -414,7 +439,7 @@
 				predictionValue: `${predictedGrowth} mm/day`,
 				regressionFormula: 'Ŷ = 6.8 - 0.04(X₁) - 5.5(X₂)',
 				regressionInputs: `X₁ (Moisture Dev.) = ${moistureDiff}%, X₂ (Mold) = ${hasMold ? 1 : 0}`,
-				sugenoWeights: `w_Low=${wLow.toFixed(2)}, w_Mod=${wMod.toFixed(2)}, w_High=${wHigh.toFixed(2)}`,
+				firingStrengths: `w_Low=${wLow.toFixed(2)}, w_Mod=${wMod.toFixed(2)}, w_High=${wHigh.toFixed(2)}`,
 				recipe: `Supplement ${amount}g of clean SCG with ${amount * 4}g of rubberwood/hardwood sawdust (20% SCG ratio) at ~60% moisture.`,
 				supporting,
 				limiting,
@@ -440,7 +465,7 @@
 			const wMod = Math.max(muTensileMod, hasPulp ? 0.3 : 0.5);
 			const wLow = !hasPulp ? 0.8 : muTensileLow;
 
-			const fuzzyScore = computeSugenoScore(wLow, wMod, wHigh);
+			const fuzzyScore = computeMamdaniScore(wLow, wMod, wHigh);
 
 			const supporting: string[] = [];
 			const limiting: string[] = [];
@@ -467,7 +492,7 @@
 				predictionValue: `${predictedTensile} Nm/g`,
 				regressionFormula: 'Ŷ = 42.0 - 11.5(X₁) + 8.0(X₂)',
 				regressionInputs: `X₁ (Particle Size) = ${estParticleMm} mm, X₂ (Pulp) = ${hasPulp ? 1 : 0}`,
-				sugenoWeights: `w_Low=${wLow.toFixed(2)}, w_Mod=${wMod.toFixed(2)}, w_High=${wHigh.toFixed(2)}`,
+				firingStrengths: `w_Low=${wLow.toFixed(2)}, w_Mod=${wMod.toFixed(2)}, w_High=${wHigh.toFixed(2)}`,
 				recipe: `Blend ${amount}g of SCG (20% filler) with ${amount * 4}g of Paper Pulp (80% matrix) using a blender before pressing.`,
 				supporting,
 				limiting,
@@ -500,7 +525,7 @@
 			const wMod = isComposted ? 0.2 : muYieldMod;
 			const wLow = isComposted ? 0.9 : muYieldLow;
 
-			const fuzzyScore = computeSugenoScore(wLow, wMod, wHigh);
+			const fuzzyScore = computeMamdaniScore(wLow, wMod, wHigh);
 
 			const supporting: string[] = [];
 			const limiting: string[] = [];
@@ -525,7 +550,7 @@
 				predictionValue: `${predictedDyeYield}% Yield (~${((amount * predictedDyeYieldNum) / 100).toFixed(1)}g extract)`,
 				regressionFormula: 'Ŷ = 20.8 - 2.4(X₁) - 0.03(X₂)',
 				regressionInputs: `X₁ (Brew Cycles) = ${cycles}, X₂ (Moisture) = ${estMoisture}%`,
-				sugenoWeights: `w_Low=${wLow.toFixed(2)}, w_Mod=${wMod.toFixed(2)}, w_High=${wHigh.toFixed(2)}`,
+				firingStrengths: `w_Low=${wLow.toFixed(2)}, w_Mod=${wMod.toFixed(2)}, w_High=${wHigh.toFixed(2)}`,
 				recipe: `Steep your ${amount}g of SCG in ${(amount / 60).toFixed(2)} Liters of water (60 g/L ratio) at 70°C for 90 minutes.`,
 				supporting,
 				limiting,
@@ -538,7 +563,6 @@
 			const predictedSorptionNum = Math.max(0.02, 0.28 - 0.0038 * estMoisture);
 			const predictedSorption = predictedSorptionNum.toFixed(3);
 
-			// Fuzzify Predicted Sorption Capacity (g/g)
 			const muSorpLow = triangleMF(predictedSorptionNum, 0, 0.04, 0.14);
 			const muSorpMod = triangleMF(predictedSorptionNum, 0.1, 0.17, 0.23);
 			const muSorpHigh = triangleMF(predictedSorptionNum, 0.2, 0.25, 0.3);
@@ -548,7 +572,7 @@
 			const wMod = hasMold ? 0 : Math.max(muSorpMod, Math.min(muSorpHigh, isDried ? 0.2 : 0.8));
 			const wLow = hasMold ? 1.0 : muSorpLow;
 
-			const fuzzyScore = computeSugenoScore(wLow, wMod, wHigh);
+			const fuzzyScore = computeMamdaniScore(wLow, wMod, wHigh);
 
 			const supporting: string[] = [];
 			const limiting: string[] = [];
@@ -575,7 +599,7 @@
 				predictionValue: `${predictedSorption} g/g (absorbs ~${(amount * predictedSorptionNum).toFixed(1)}g water)`,
 				regressionFormula: 'Ŷ = 0.28 - 0.0038(X₁)',
 				regressionInputs: `X₁ (Initial Moisture) = ${estMoisture}%`,
-				sugenoWeights: `w_Low=${wLow.toFixed(2)}, w_Mod=${wMod.toFixed(2)}, w_High=${wHigh.toFixed(2)}`,
+				firingStrengths: `w_Low=${wLow.toFixed(2)}, w_Mod=${wMod.toFixed(2)}, w_High=${wHigh.toFixed(2)}`,
 				recipe: `Pack ${amount}g of bone-dry SCG into breathable non-woven pouches (${Math.max(1, Math.floor(amount / 20))} sachets × 20g each).`,
 				supporting,
 				limiting,

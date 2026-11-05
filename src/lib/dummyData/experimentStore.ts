@@ -105,7 +105,7 @@ export type SavedResult = {
     predictionValue: string;
     regressionFormula: string;
     regressionInputs: string;
-    sugenoWeights: string;
+    firingStrengths: string;
     recipe: string;
     supporting: string[];
     limiting: string[];
