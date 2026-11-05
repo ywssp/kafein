@@ -2,7 +2,7 @@
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { experimentStore } from '$lib/dummyData/experimentStore';
-	
+
 	import PageHeader from '$lib/components/text/PageHeader.svelte';
 	import InputField from '$lib/components/inputs/FormInput.svelte';
 	import BasicButton from '$lib/components/inputs/BasicButton.svelte';
@@ -19,18 +19,19 @@
 	interface RecommendationResult {
 		id: string;
 		title: string;
-		score: number; 
+		score: number; // 0 - 100% from Sugeno Fuzzy Logic
 		level: SuitabilityLevel;
-		predictionLabel: string; 
-		predictionValue: string;
-		regressionFormula: string;
-		regressionInputs: string; 
-		sugenoWeights: string; 
+		predictionLabel: string; // What Linear Regression predicts (Y)
+		predictionValue: string; // Calculated Y value
+		regressionFormula: string; // The Y = b0 + b1*X1 formula
+		regressionInputs: string; // The X values plugged into the formula
+		sugenoWeights: string; // Sugeno rule firing weights (w_Low, w_Mod, w_High)
 		recipe: string;
 		supporting: string[];
 		limiting: string[];
 		remediation?: string;
 		citation: string;
+		isInfo?: boolean; // true = shown as additional info, not scored or ranked
 	}
 
 	const NO_CONTAMINATION = 'No Contamination';
@@ -38,7 +39,6 @@
 	const intendedApplications = [
 		'Explore All Applications',
 		'Compost & Soil Amendment',
-		'Bio-Briquette Fuel',
 		'Mushroom Cultivation',
 		'Paper-Based Composite',
 		'Natural Dye Extraction',
@@ -89,23 +89,25 @@
 	let form = $state(defaults());
 	let results = $state<RecommendationResult[] | null>(null);
 
+	let recommended = $derived((results ?? []).filter((r) => !r.isInfo));
+	let additionalInfo = $derived((results ?? []).filter((r) => r.isInfo));
+
 	const pathwayColors: Record<string, string> = {
-		'Compost & Soil Amendment': '#5c996e', // Sage Green
-		'Bio-Briquette Fuel': '#d4a373', // Caramel
-		'Mushroom Cultivation': '#c97b63', // Terracotta
-		'Paper-Based Composite': '#7c9eb2', // Slate Blue
-		'Natural Dye Extraction': '#a87ca0', // Muted Plum
-		'Bio-Based Desiccant': '#e0b45c' // Warm Amber
+		'Compost & Soil Amendment': '#5c996e', 
+		'Mushroom Cultivation': '#c97b63', 
+		'Paper-Based Composite': '#7c9eb2', 
+		'Natural Dye Extraction': '#a87ca0', 
+		'Bio-Based Desiccant': '#e0b45c' 
 	};
 
-	// Automatically computes the Pie Chart slices & CSS conic-gradients whenever `results` updates
 	let summaryStats = $derived.by(() => {
-		if (!results || results.length === 0) return null;
+		const list = recommended;
+		if (list.length === 0) return null;
 
-		const totalScore = results.reduce((sum, item) => sum + item.score, 0) || 1;
+		const totalScore = list.reduce((sum, item) => sum + item.score, 0) || 1;
 		let currentAngle = 0;
 
-		const pathwaySlices = results.map((item) => {
+		const pathwaySlices = list.map((item) => {
 			const sharePercent = (item.score / totalScore) * 100;
 			const startAngle = currentAngle;
 			const endAngle = currentAngle + (sharePercent * 360) / 100;
@@ -118,11 +120,10 @@
 			};
 		});
 
-		// Count High / Moderate / Low tiers
-		const highCount = results.filter((r) => r.level === 'High').length;
-		const modCount = results.filter((r) => r.level === 'Moderate').length;
-		const lowCount = results.filter((r) => r.level === 'Low').length;
-		const totalCount = results.length;
+		const highCount = list.filter((r) => r.level === 'High').length;
+		const modCount = list.filter((r) => r.level === 'Moderate').length;
+		const lowCount = list.filter((r) => r.level === 'Low').length;
+		const totalCount = list.length;
 
 		const highDeg = (highCount / totalCount) * 360;
 		const modDeg = highDeg + (modCount / totalCount) * 360;
@@ -137,8 +138,9 @@
 			highCount,
 			modCount,
 			lowCount,
+			total: totalCount,
 			avgScore,
-			topMatch: results[0]
+			topMatch: list[0]
 		};
 	});
 
@@ -160,25 +162,20 @@
 	let isFormValid = $derived(Number(form.scgAmount) > 0 && form.contamination.length > 0);
 
 	function resetForm() {
-	if (results && !saved && !confirm('This recommendation is not saved. Reset anyway?')) return;
-	form = defaults();
-	results = null;
-	saved = false;
-}
+		if (results && !saved && !confirm('This recommendation is not saved. Reset anyway?')) return;
+		form = defaults();
+		results = null;
+		saved = false;
+	}
 
-	// =========================================================================
 	// TAKAGI-SUGENO FUZZY LOGIC HELPER FUNCTIONS
-	// =========================================================================
 
-	// Triangular Membership Function: returns μ in [0, 1]
 	function triangleMF(x: number, a: number, b: number, c: number): number {
 		if (x <= a || x >= c) return 0;
 		if (x === b) return 1;
 		return x < b ? (x - a) / (b - a) : (c - x) / (c - b);
 	}
-
-	// Zero-Order Sugeno Weighted Average Defuzzification
-	// Singleton output constants: z_Low = 20, z_Mod = 55, z_High = 95
+	//Sugeno Fuzzy Logic score
 	function computeSugenoScore(wLow: number, wMod: number, wHigh: number): number {
 		const sumWeights = wLow + wMod + wHigh;
 		if (sumWeights === 0) return 50;
@@ -196,9 +193,6 @@
 		event.preventDefault();
 		const amount = Number(form.scgAmount);
 
-		// =========================================================================
-		// STEP 1: FEATURE ENCODING (Map Form Inputs to Numerical Values)
-		// =========================================================================
 		const moistureMap: Record<string, number> = {
 			Wet: 65,
 			Damp: 42,
@@ -226,11 +220,8 @@
 
 		const evaluatedPathways: RecommendationResult[] = [];
 
-		// =========================================================================
 		// PATHWAY 1: COMPOST & SOIL AMENDMENT
-		// Linear Regression predicts: Germination Index (%)
-		// Sugeno Fuzzy Logic evaluates: Predicted GI (Ŷ), Composting, Co-materials
-		// =========================================================================
+		// Linear Regression predicts: Germination Index (%) Sugeno Fuzzy Logic evaluates: Predicted GI (Ŷ), Composting, Co-materials
 		{
 			const compostFactor = isComposted ? 1 : form.compostingStatus === 'Not Composted' ? 0 : 0.5;
 			const predictedGI = Math.min(
@@ -238,7 +229,6 @@
 				Math.max(18, Math.round(32.5 + 58.0 * compostFactor - 0.12 * estMoisture))
 			);
 
-			// Fuzzify Linear Regression output (Predicted Germination Index) & conditions
 			const muGILow = triangleMF(predictedGI, 0, 25, 55);
 			const muGIMod = triangleMF(predictedGI, 40, 65, 85);
 			const muGIHigh = triangleMF(predictedGI, 70, 90, 110);
@@ -249,7 +239,6 @@
 				form.materials.includes('Peat Moss');
 			const muMix = hasSoilMix ? 1.0 : 0.3;
 
-			// Sugeno Rule Firing Weights (w_Low, w_Mod, w_High)
 			const wHigh = hasForeign ? 0 : Math.min(muGIHigh, muMix);
 			const wMod = Math.max(
 				muGIMod,
@@ -303,11 +292,7 @@
 			});
 		}
 
-		// =========================================================================
-		// PATHWAY 2: BIO-BRIQUETTE FUEL
-		// Linear Regression predicts: Calorific Value (MJ/kg)
-		// Sugeno Fuzzy Logic evaluates: Predicted Calorific Value (Ŷ), Moisture, Sawdust
-		// =========================================================================
+		// BIO-BRIQUETTE FUEL (ADDITIONAL INFO ONLY: shown, but not scored or ranked) Linear Regression predicts: Calorific Value (MJ/kg)
 		{
 			const hasSawdust = form.materials.includes('Sawdust');
 			const predictedCalorificNum = 22.4 - 0.14 * estMoisture + (hasSawdust ? 1.2 : 0);
@@ -334,9 +319,9 @@
 			const supporting: string[] = [];
 			const limiting: string[] = [];
 
-			if (estMoisture <= 15 || form.dryingCondition !== 'Not Dried') {
+			if (estMoisture <= 15) {
 				supporting.push(
-					`Low moisture (${form.moistureCondition} / ${form.dryingCondition}) enables high calorific output and durability.`
+					`Low moisture (${form.moistureCondition}) enables high calorific output and durability.`
 				);
 			} else {
 				limiting.push(
@@ -356,6 +341,7 @@
 			evaluatedPathways.push({
 				id: 'Bio-Briquette Fuel',
 				title: 'Bio-Briquette Solid Fuel',
+				isInfo: true,
 				score: fuzzyScore,
 				level: getSuitabilityLevel(fuzzyScore),
 				predictionLabel: 'Predicted Calorific Value',
@@ -367,9 +353,8 @@
 				supporting,
 				limiting,
 				remediation:
-					estMoisture > 20 &&
-					(form.equipment.includes('Oven') || form.equipment.includes('Sunlight'))
-						? `Use your ${form.equipment.includes('Oven') ? 'Oven (105°C for 2–3 hrs)' : 'Sunlight (1–2 days)'} to dry the SCG below 10% moisture and boost calorific value to ~21.5 MJ/kg.`
+					estMoisture > 20 && form.equipment.includes('Oven')
+						? 'Use your Oven (105°C for 2–3 hrs) to dry the SCG below 10% moisture and boost calorific value to ~21.5 MJ/kg.'
 						: undefined,
 				citation: 'Brunerová et al. (2020)'
 			});
@@ -382,7 +367,6 @@
 			const predictedGrowthNum = Math.max(0, 6.8 - 0.04 * moistureDiff - (hasMold ? 5.5 : 0));
 			const predictedGrowth = predictedGrowthNum.toFixed(2);
 
-			// Fuzzify Predicted Growth Rate & Freshness
 			const muGrowthLow = triangleMF(predictedGrowthNum, -1, 1.5, 4.5);
 			const muGrowthMod = triangleMF(predictedGrowthNum, 3.5, 5.0, 6.2);
 			const muGrowthHigh = triangleMF(predictedGrowthNum, 5.5, 6.8, 8.0);
@@ -392,7 +376,6 @@
 				form.storageDuration === 'Stored for a Few Hours';
 			const muFresh = isFresh ? 1.0 : 0.3;
 
-			// Sugeno Rule
 			const wHigh = hasMold || !isClean ? 0 : Math.min(muGrowthHigh, muFresh);
 			const wMod = hasMold ? 0 : Math.max(muGrowthMod, Math.min(muGrowthHigh, 1 - muFresh));
 			const wLow = hasMold || !isClean ? 1.0 : Math.max(muGrowthLow, 1 - muFresh);
@@ -443,16 +426,12 @@
 			});
 		}
 
-		// =========================================================================
-		// PATHWAY 4: PAPER-BASED COMPOSITE MATERIALS
-		// Linear Regression predicts: Composite Tensile Index (Nm/g)
-		// =========================================================================
+		// PATHWAY 4: PAPER-BASED COMPOSITE MATERIALS Linear Regression predicts: Composite Tensile Index (Nm/g)
 		{
 			const hasPulp = form.materials.includes('Paper Pulp');
 			const predictedTensileNum = 42.0 - 11.5 * estParticleMm + (hasPulp ? 8.0 : 0);
 			const predictedTensile = predictedTensileNum.toFixed(1);
 
-			// Fuzzify Predicted Tensile Index & Particle Size
 			const muTensileLow = triangleMF(predictedTensileNum, 20, 30, 38);
 			const muTensileMod = triangleMF(predictedTensileNum, 33, 39, 45);
 			const muTensileHigh = triangleMF(predictedTensileNum, 41, 47, 52);
@@ -604,18 +583,23 @@
 					form.moistureCondition !== 'Dry'
 						? 'Oven-dry at 105°C until constant mass before sealing into desiccant packets.'
 						: undefined,
-				citation: 'Moussa et al. (2022);'
+				citation: 'Moussa et al. (2022)'
 			});
 		}
 
-		results = evaluatedPathways.sort((a, b) => {
-			if (form.intendedApp !== 'Explore All Applications') {
-				if (a.id === form.intendedApp) return -1;
-				if (b.id === form.intendedApp) return 1;
-			}
-			return b.score - a.score;
-		});
+		// Rank only the scored pathways; informational ones go last.
+		const ranked = evaluatedPathways
+			.filter((r) => !r.isInfo)
+			.sort((a, b) => {
+				if (form.intendedApp !== 'Explore All Applications') {
+					if (a.id === form.intendedApp) return -1;
+					if (b.id === form.intendedApp) return 1;
+				}
+				return b.score - a.score;
+			});
+		results = [...ranked, ...evaluatedPathways.filter((r) => r.isInfo)];
 
+		// New recommendation: not saved yet
 		recId = `REC-${Date.now().toString().slice(-6)}`;
 		saved = false;
 
@@ -625,55 +609,54 @@
 	}
 
 	function saveRecommendation() {
-	if (!results) return;
+		if (!results) return;
 
-	const formSnapshot = $state.snapshot(form);
-	const resultsSnapshot = $state.snapshot(results);
+		const formSnapshot = $state.snapshot(form);
+		const resultsSnapshot = $state.snapshot(results);
 
-	experimentStore.update((list) => [
-		{
-			id: recId,
-			batch: `${form.coffeeBlend} · ${form.scgAmount}g`,
-			package: '',
-			start: new Date().toLocaleDateString('en-US', {
-				month: 'short',
-				day: '2-digit',
-				year: 'numeric'
-			}),
-			status: 'Complete',
-			form: formSnapshot,
-			results: resultsSnapshot
-		},
-		...list
-	]);
-	saved = true;
-}
+		experimentStore.update((list) => [
+			{
+				id: recId,
+				batch: `${form.coffeeBlend} · ${form.scgAmount}g`,
+				package: '',
+				start: new Date().toLocaleDateString('en-US', {
+					month: 'short',
+					day: '2-digit',
+					year: 'numeric'
+				}),
+				status: 'Complete',
+				form: formSnapshot,
+				results: resultsSnapshot
+			},
+			...list
+		]);
+		saved = true;
+	}
 
+	// Popup when the user leaves with an unsaved recommendation
+	beforeNavigate(({ cancel, to, willUnload }) => {
+		if (leaving || !results || saved) return;
+		cancel(); // for refresh/close tab, this triggers the browser's own prompt
+		if (willUnload) return;
+		pendingUrl = to?.url ?? null;
+		showLeaveModal = true;
+	});
 
-// This is for popup when use exits bifor change
-beforeNavigate(({ cancel, to, willUnload }) => {
-	if (leaving || !results || saved) return;
-	cancel();
-	if (willUnload) return;
-	pendingUrl = to?.url ?? null;
-	showLeaveModal = true;
-});
+	function stay() {
+		showLeaveModal = false;
+		pendingUrl = null;
+	}
 
-function stay() {
-	showLeaveModal = false;
-	pendingUrl = null;
-}
+	async function leaveWithoutSaving() {
+		leaving = true;
+		showLeaveModal = false;
+		if (pendingUrl) await goto(pendingUrl);
+	}
 
-async function leaveWithoutSaving() {
-	leaving = true;
-	showLeaveModal = false;
-	if (pendingUrl) await goto(pendingUrl);
-}
-
-async function saveAndLeave() {
-	saveRecommendation();
-	await leaveWithoutSaving();
-}
+	async function saveAndLeave() {
+		saveRecommendation();
+		await leaveWithoutSaving();
+	}
 </script>
 
 {#snippet checkGroup(label: string, group: Group, options: string[])}
@@ -873,25 +856,33 @@ async function saveAndLeave() {
 		</div>
 
 		{#if summaryStats}
-			<div class="mb-8 grid grid-cols-1 gap-8 rounded-xl border-2 border-[#6e4833] bg-[#4a2e20] p-6 lg:grid-cols-12">
+			<div
+				class="mb-8 grid grid-cols-1 gap-8 rounded-xl border-2 border-[#6e4833] bg-[#4a2e20] p-6 lg:grid-cols-12"
+			>
+				<!-- Left: Pathway Share Pie/Donut Chart -->
 				<div class="flex flex-col items-center justify-center gap-6 sm:flex-row lg:col-span-7">
-					<div class="relative flex h-44 w-44 shrink-0 items-center justify-center rounded-full shadow-md" style="background: {summaryStats.pathwayGradient}">
-						<div class="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-[#362016] text-center shadow-inner">
-							<span class="text-[0.65rem] tracking-wider uppercase text-cream/60">Top Score</span>
+					<div
+						class="relative flex h-44 w-44 shrink-0 items-center justify-center rounded-full shadow-md"
+						style="background: {summaryStats.pathwayGradient}"
+					>
+						<div
+							class="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-[#362016] text-center shadow-inner"
+						>
+							<span class="text-[0.65rem] tracking-wider text-cream/60 uppercase">Top Score</span>
 							<span class="text-xl font-bold text-caramel">{summaryStats.topMatch.score}%</span>
 						</div>
 					</div>
 
 					<div class="w-full space-y-2">
-						<h3 class="text-lg font-bold text-caramel">
-							Application Suitability Share
-						</h3>
+						<h3 class="text-lg font-bold text-caramel">Application Suitability Share</h3>
 						<p class="text-xs text-cream/70">
-							Relative suitability distribution across all 6 evaluated pathways:
+							Relative suitability distribution across all {summaryStats.total} evaluated pathways:
 						</p>
 						<div class="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
 							{#each summaryStats.pathwaySlices as slice (slice.id)}
-								<div class="flex items-center justify-between gap-2 rounded bg-[#362016]/60 px-2.5 py-1 text-xs">
+								<div
+									class="flex items-center justify-between gap-2 rounded bg-[#362016]/60 px-2.5 py-1 text-xs"
+								>
 									<div class="flex items-center gap-2 truncate">
 										<span
 											class="h-3 w-3 shrink-0 rounded-sm"
@@ -909,10 +900,17 @@ async function saveAndLeave() {
 				</div>
 
 				<!-- Right: High / Moderate / Low Tier Pie Chart -->
-				<div class="flex flex-col items-center justify-center gap-6 border-t border-[#6e4833]/60 pt-6 sm:flex-row lg:col-span-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
-					<div class="relative flex h-36 w-36 shrink-0 items-center justify-center rounded-full shadow-md" style="background: {summaryStats.tierGradient}">
-						<div class="flex h-20 w-20 flex-col items-center justify-center rounded-full bg-[#362016] text-center shadow-inner">
-							<span class="text-[0.6rem] tracking-wider uppercase text-cream/60">Avg Fit</span>
+				<div
+					class="flex flex-col items-center justify-center gap-6 border-t border-[#6e4833]/60 pt-6 sm:flex-row lg:col-span-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8"
+				>
+					<div
+						class="relative flex h-36 w-36 shrink-0 items-center justify-center rounded-full shadow-md"
+						style="background: {summaryStats.tierGradient}"
+					>
+						<div
+							class="flex h-20 w-20 flex-col items-center justify-center rounded-full bg-[#362016] text-center shadow-inner"
+						>
+							<span class="text-[0.6rem] tracking-wider text-cream/60 uppercase">Avg Fit</span>
 							<span class="text-lg font-bold text-cream">{summaryStats.avgScore}%</span>
 						</div>
 					</div>
@@ -925,21 +923,27 @@ async function saveAndLeave() {
 									<span class="h-3 w-3 rounded-full bg-[#5c996e]"></span>
 									High Suitability (≥75%)
 								</span>
-								<span class="font-bold text-[#9be0af]">{summaryStats.highCount} / 6</span>
+								<span class="font-bold text-[#9be0af]">
+									{summaryStats.highCount} / {summaryStats.total}
+								</span>
 							</div>
 							<div class="flex items-center justify-between rounded bg-[#362016]/60 px-3 py-1.5">
 								<span class="flex items-center gap-2 text-cream">
 									<span class="h-3 w-3 rounded-full bg-[#d4a373]"></span>
 									Moderate (45–74%)
 								</span>
-								<span class="font-bold text-caramel">{summaryStats.modCount} / 6</span>
+								<span class="font-bold text-caramel">
+									{summaryStats.modCount} / {summaryStats.total}
+								</span>
 							</div>
 							<div class="flex items-center justify-between rounded bg-[#362016]/60 px-3 py-1.5">
 								<span class="flex items-center gap-2 text-cream">
 									<span class="h-3 w-3 rounded-full bg-[#b84a39]"></span>
 									Low Suitability (&lt;45%)
 								</span>
-								<span class="font-bold text-[#f29b94]">{summaryStats.lowCount} / 6</span>
+								<span class="font-bold text-[#f29b94]">
+									{summaryStats.lowCount} / {summaryStats.total}
+								</span>
 							</div>
 						</div>
 					</div>
@@ -947,8 +951,9 @@ async function saveAndLeave() {
 			</div>
 		{/if}
 
+		<!-- Ranked recommendation cards -->
 		<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-			{#each results as item, index (item.id)}
+			{#each recommended as item, index (item.id)}
 				{@const isIntended = form.intendedApp === item.id}
 				<div
 					class="flex flex-col justify-between rounded-xl border-2 p-6 transition-all {isIntended
@@ -956,12 +961,11 @@ async function saveAndLeave() {
 						: 'border-[#6e4833] bg-[#4a2e20]'}"
 				>
 					<div>
-
 						<div class="flex flex-wrap items-start justify-between gap-4">
 							<div>
 								{#if isIntended}
 									<span
-										class="mb-1 inline-block rounded bg-caramel px-2.5 py-0.5 text-xs font-bold uppercase text-[#2b1810]"
+										class="mb-1 inline-block rounded bg-caramel px-2.5 py-0.5 text-xs font-bold text-[#2b1810] uppercase"
 									>
 										Your Intended Application
 									</span>
@@ -1060,14 +1064,64 @@ async function saveAndLeave() {
 			{/each}
 		</div>
 
+		<!-- Additional information-->
+		{#if additionalInfo.length > 0}
+			<div class="mt-10">
+				<h3 class="text-xl font-bold text-caramel">Additional Information</h3>
+				<p class="mt-1 text-sm text-cream/70">
+					For reference only. These are not scored or ranked as recommendations.
+				</p>
+
+				{#each additionalInfo as item (item.id)}
+					<div class="mt-4 rounded-xl border-2 border-dashed border-[#6e4833] bg-[#3d2519] p-6">
+						<h4 class="text-xl font-bold text-caramel">{item.title}</h4>
+
+						<div class="mt-3 rounded-lg border border-[#875940] bg-[#362016]/80 p-4">
+							<div class="text-xs text-cream/70">{item.predictionLabel}</div>
+							<div class="text-2xl font-bold text-cream">{item.predictionValue}</div>
+							<div class="mt-1 font-mono text-xs text-cream/60">
+								{item.regressionFormula} · {item.regressionInputs}
+							</div>
+						</div>
+
+						<div class="mt-4 rounded-lg bg-[#2e1b12] p-3 text-sm text-cream/95">
+							<strong class="text-caramel">Preparation & Ratio Guide:</strong>
+							{item.recipe}
+						</div>
+
+						<div class="mt-3 space-y-1.5 text-sm">
+							{#each item.supporting as reason (reason)}
+								<div class="text-[#9be0af]">✓ {reason}</div>
+							{/each}
+							{#each item.limiting as reason (reason)}
+								<div class="text-[#f29b94]">✕ {reason}</div>
+							{/each}
+						</div>
+
+						{#if item.remediation}
+							<div class="mt-3 text-sm text-cream">
+								<strong class="text-caramel">Tip:</strong>
+								{item.remediation}
+							</div>
+						{/if}
+
+						<div class="mt-3 text-xs text-cream/60">Reference Basis: {item.citation}</div>
+					</div>
+				{/each}
+			</div>
+		{/if}
+
 		{#if form.intendedApp !== 'Explore All Applications'}
 			<div class="mt-6 text-sm text-cream/70">
-				Note: The recommendation for your intended application is highlighted above. Other pathways are also evaluated for comparison.
+				Note: The recommendation for your intended application is highlighted above. Other
+				pathways are also evaluated for comparison.
 			</div>
-{/if}
+		{/if}
 
-				<!-- Save bar: very bottom of the results -->
-		<div class="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-xl border-2 border-[#6e4833] bg-[#4a2e20] p-5">
+		<!-- Save bar: very bottom of the results -->
+		<div
+			class="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-xl border-2 border-[#6e4833] bg-[#4a2e20] p-5"
+		>
 			<div>
 				<h3 class="text-lg font-bold text-caramel">
 					{saved ? 'Recommendation saved' : 'Save this recommendation?'}
@@ -1084,16 +1138,15 @@ async function saveAndLeave() {
 						View History
 					</BasicButton>
 				{:else}
-					<BasicButton type="button" onclick={saveRecommendation}>
-						Save Recommendation
-					</BasicButton>
+					<BasicButton type="button" onclick={saveRecommendation}>Save Recommendation</BasicButton>
 				{/if}
 			</div>
 		</div>
 	</section>
 {/if}
 
-		{#if showLeaveModal}
+<!-- Leave-without-saving popup -->
+{#if showLeaveModal}
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
 		role="dialog"
