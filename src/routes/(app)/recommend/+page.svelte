@@ -286,7 +286,7 @@
 				title: 'Compost & Soil Amendment',
 				score: fuzzyScore,
 				level: getSuitabilityLevel(fuzzyScore),
-				predictionLabel: 'Predicted Germination Index (Ŷ)',
+				predictionLabel: 'Predicted Germination Index',
 				predictionValue: `${predictedGI}% Plant Growth Viability`,
 				regressionFormula: 'Ŷ = 32.5 + 58.0(X₁) - 0.12(X₂)',
 				regressionInputs: `X₁ (Compost) = ${compostFactor}, X₂ (Moisture) = ${estMoisture}%`,
@@ -358,7 +358,7 @@
 				title: 'Bio-Briquette Solid Fuel',
 				score: fuzzyScore,
 				level: getSuitabilityLevel(fuzzyScore),
-				predictionLabel: 'Predicted Calorific Value (Ŷ)',
+				predictionLabel: 'Predicted Calorific Value',
 				predictionValue: `${predictedCalorific} MJ/kg`,
 				regressionFormula: 'Ŷ = 22.4 - 0.14(X₁) + 1.2(X₂)',
 				regressionInputs: `X₁ (Moisture) = ${estMoisture}%, X₂ (Sawdust) = ${hasSawdust ? 1 : 0}`,
@@ -427,7 +427,7 @@
 				title: 'Mushroom Cultivation Substrate',
 				score: fuzzyScore,
 				level: getSuitabilityLevel(fuzzyScore),
-				predictionLabel: 'Predicted Mycelial Growth Rate (Ŷ)',
+				predictionLabel: 'Predicted Mycelial Growth Rate',
 				predictionValue: `${predictedGrowth} mm/day`,
 				regressionFormula: 'Ŷ = 6.8 - 0.04(X₁) - 5.5(X₂)',
 				regressionInputs: `X₁ (Moisture Dev.) = ${moistureDiff}%, X₂ (Mold) = ${hasMold ? 1 : 0}`,
@@ -484,7 +484,7 @@
 				title: 'Paper-Based Composite Material',
 				score: fuzzyScore,
 				level: getSuitabilityLevel(fuzzyScore),
-				predictionLabel: 'Predicted Tensile Index (Ŷ)',
+				predictionLabel: 'Predicted Tensile Index',
 				predictionValue: `${predictedTensile} Nm/g`,
 				regressionFormula: 'Ŷ = 42.0 - 11.5(X₁) + 8.0(X₂)',
 				regressionInputs: `X₁ (Particle Size) = ${estParticleMm} mm, X₂ (Pulp) = ${hasPulp ? 1 : 0}`,
@@ -542,7 +542,7 @@
 				title: 'Natural Dye Extraction',
 				score: fuzzyScore,
 				level: getSuitabilityLevel(fuzzyScore),
-				predictionLabel: 'Predicted Natural Dye Yield (Ŷ)',
+				predictionLabel: 'Predicted Natural Dye Yield',
 				predictionValue: `${predictedDyeYield}% Yield (~${((amount * predictedDyeYieldNum) / 100).toFixed(1)}g extract)`,
 				regressionFormula: 'Ŷ = 20.8 - 2.4(X₁) - 0.03(X₂)',
 				regressionInputs: `X₁ (Brew Cycles) = ${cycles}, X₂ (Moisture) = ${estMoisture}%`,
@@ -592,7 +592,7 @@
 				title: 'Bio-Based Desiccant Sachet',
 				score: fuzzyScore,
 				level: getSuitabilityLevel(fuzzyScore),
-				predictionLabel: 'Predicted Moisture Sorption Capacity (Ŷ)',
+				predictionLabel: 'Predicted Moisture Sorption Capacity',
 				predictionValue: `${predictedSorption} g/g (absorbs ~${(amount * predictedSorptionNum).toFixed(1)}g water)`,
 				regressionFormula: 'Ŷ = 0.28 - 0.0038(X₁)',
 				regressionInputs: `X₁ (Initial Moisture) = ${estMoisture}%`,
@@ -985,13 +985,13 @@ async function saveAndLeave() {
 								>
 									{item.score}% — {item.level} Suitability
 								</span>
-								<div class="mt-1 font-mono text-[0.7rem] text-cream/60">
+								<!-- <div class="mt-1 font-mono text-[0.7rem] text-cream/60">
 									Sugeno: {item.sugenoWeights}
-								</div>
+								</div> -->
 							</div>
 						</div>
 
-						<div class="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-[#2e1b12]">
+						<!-- <div class="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-[#2e1b12]">
 							<div
 								class="h-full transition-all duration-500 {item.level === 'High'
 									? 'bg-[#5c996e]'
@@ -1000,26 +1000,26 @@ async function saveAndLeave() {
 										: 'bg-[#b84a39]'}"
 								style="width: {item.score}%"
 							></div>
-						</div>
+						</div> -->
 
 						<div class="mt-5 rounded-lg border border-[#875940] bg-[#362016]/80 p-4">
-							<div class="flex items-center justify-between border-b border-[#6e4833]/50 pb-2">
+							<!-- <div class="flex items-center justify-between border-b border-[#6e4833]/50 pb-2">
 								<span class="text-xs font-bold tracking-wider uppercase text-caramel">
 									Linear Regression Model Output
 								</span>
 								<code class="rounded bg-[#2b1810] px-2 py-0.5 font-mono text-xs text-cream/90">
 									{item.regressionFormula}
 								</code>
-							</div>
+							</div> -->
 
 							<div class="mt-2.5 flex flex-wrap items-baseline justify-between gap-2">
 								<div>
 									<div class="text-xs text-cream/70">{item.predictionLabel}</div>
 									<div class="text-2xl font-bold text-cream">{item.predictionValue}</div>
 								</div>
-								<div class="text-right font-mono text-xs text-cream/75">
+								<!-- <div class="text-right font-mono text-xs text-cream/75">
 									{item.regressionInputs}
-								</div>
+								</div> -->
 							</div>
 						</div>
 
