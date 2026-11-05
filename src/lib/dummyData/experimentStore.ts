@@ -20,6 +20,8 @@ export type Experiment = {
     duration?: number;
     interval?: number;
     sensorNode?: string;
+    form?: SavedForm;
+    results?: SavedResult[];
 };
 
 // sample data muna
@@ -76,3 +78,37 @@ export function setExperimentStatus(id: string, status: ReportStatus) {
 export function updateExperiment(id: string, patch: Partial<Experiment>) {
     experimentStore.update((list) => list.map((e) => (e.id === id ? { ...e, ...patch } : e)));
 }
+
+export type SavedForm = {
+    intendedApp: string;
+    coffeeBlend: string;
+    brewingCycles: string;
+    brewingMethod: string;
+    groundSize: string;
+    moistureCondition: string;
+    scgAmount: string | number;
+    storageDuration: string;
+    processingState: string;
+    dryingCondition: string;
+    compostingStatus: string;
+    contamination: string[];
+    materials: string[];
+    equipment: string[];
+};
+
+export type SavedResult = {
+    id: string;
+    title: string;
+    score: number;
+    level: 'High' | 'Moderate' | 'Low';
+    predictionLabel: string;
+    predictionValue: string;
+    regressionFormula: string;
+    regressionInputs: string;
+    sugenoWeights: string;
+    recipe: string;
+    supporting: string[];
+    limiting: string[];
+    remediation?: string;
+    citation: string;
+};
